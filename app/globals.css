@@ -1,0 +1,141 @@
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+:root {
+  --font-display: "";
+  --font-sans: "";
+  --font-mono: "";
+
+  /* Single source of truth for the top navigation height so the dashboard
+     viewport math (100dvh - nav) never drifts out of sync across screens. */
+  --nav-h: 52px;
+
+  /* Text ramp */
+  --ink: #4a4458;
+  --ink-soft: #6b6478;
+  --ink-faint: #9a94a8;
+
+  /* Muted accent ramp (light) */
+  --accent-rose: #a86475;
+  --accent-gold: #9a8846;
+  --accent-mint: #4e7d63;
+  --accent-serenity: #4f6b82;
+  --accent-lavender: #6d5f86;
+
+  /* Surfaces */
+  --page-bg: #fdf7fa;
+  --glass-bg: rgba(255, 255, 255, 0.42);
+  --glass-border: rgba(255, 255, 255, 0.65);
+  --glass-shadow: 0 10px 40px rgba(248, 180, 196, 0.15);
+  --glass-hover: rgba(255, 255, 255, 0.55);
+
+  /* Aurora blobs (light) */
+  --aurora:
+    radial-gradient(circle at 15% 20%, rgba(248, 180, 196, 0.35), transparent 45%),
+    radial-gradient(circle at 85% 15%, rgba(212, 184, 240, 0.32), transparent 45%),
+    radial-gradient(circle at 75% 85%, rgba(168, 216, 240, 0.30), transparent 45%),
+    radial-gradient(circle at 20% 80%, rgba(184, 232, 200, 0.30), transparent 45%),
+    linear-gradient(120deg, #fdf7fa, #f7f0fb, #f0f7fb);
+}
+
+.dark {
+  /* Text ramp — soft warm whites for comfort on dark */
+  --ink: #ece7f2;
+  --ink-soft: #b9b2c8;
+  --ink-faint: #8a83a0;
+
+  /* Accent ramp (dark) — brighter, luminous versions of the same hues so
+     they keep the feminine palette while staying legible on a dark ground */
+  --accent-rose: #e6a6b8;
+  --accent-gold: #e0cd7e;
+  --accent-mint: #9bd8b4;
+  --accent-serenity: #9fc7e6;
+  --accent-lavender: #c3a9e8;
+
+  /* Surfaces — deep plum charcoal with translucent glass */
+  --page-bg: #17131f;
+  --glass-bg: rgba(52, 44, 68, 0.45);
+  --glass-border: rgba(196, 178, 224, 0.16);
+  --glass-shadow: 0 10px 40px rgba(0, 0, 0, 0.45);
+  --glass-hover: rgba(64, 54, 84, 0.6);
+
+  /* Aurora blobs (dark) — same hues, lower alpha, over a deep plum base */
+  --aurora:
+    radial-gradient(circle at 15% 20%, rgba(200, 120, 150, 0.22), transparent 45%),
+    radial-gradient(circle at 85% 15%, rgba(150, 110, 200, 0.22), transparent 45%),
+    radial-gradient(circle at 75% 85%, rgba(90, 140, 190, 0.20), transparent 45%),
+    radial-gradient(circle at 20% 80%, rgba(90, 160, 120, 0.18), transparent 45%),
+    linear-gradient(120deg, #17131f, #1c1726, #161a24);
+}
+
+html,
+body {
+  color: var(--ink);
+  background-color: var(--page-bg);
+  /* Full-width layout: never allow horizontal scrolling. */
+  max-width: 100%;
+  overflow-x: hidden;
+}
+
+html {
+  /* Use the dynamic viewport unit so mobile browser chrome doesn't spawn a
+     phantom scrollbar; fall back to vh where dvh is unsupported. */
+  min-height: 100vh;
+  min-height: 100dvh;
+}
+
+*,
+*::before,
+*::after {
+  box-sizing: border-box;
+}
+
+body {
+  min-height: 100vh;
+  min-height: 100dvh;
+  background-image: var(--aurora);
+  background-size: 200% 200%;
+  background-attachment: fixed;
+  animation: aurora 18s ease-in-out infinite;
+  transition: background-color 0.4s ease, color 0.4s ease;
+}
+
+/* Theme-aware aurora surface. Reused by the fullscreen dashboard so the
+   backdrop follows the active theme instead of a hardcoded light gradient. */
+.aurora-bg {
+  background-color: var(--page-bg);
+  background-image: var(--aurora);
+  background-size: 200% 200%;
+  animation: aurora 18s ease-in-out infinite;
+}
+
+@keyframes aurora {
+  0% { background-position: 0% 50%; }
+  50% { background-position: 100% 50%; }
+  100% { background-position: 0% 50%; }
+}
+
+/* Frosted-glass surface used across cards, tables and panels.
+   Uses `background-color` (longhand) — not the `background` shorthand — so
+   Tailwind gradient utilities (`bg-gradient-*`, which set background-image)
+   can layer a theme-aware tint on top without wiping the glass fill. */
+.glass {
+  background-color: var(--glass-bg);
+  backdrop-filter: blur(18px);
+  -webkit-backdrop-filter: blur(18px);
+  border: 1px solid var(--glass-border);
+  box-shadow: var(--glass-shadow);
+  transition: background 0.4s ease, border-color 0.4s ease, box-shadow 0.4s ease;
+}
+
+/* Respect reduced-motion preferences */
+@media (prefers-reduced-motion: reduce) {
+  *,
+  *::before,
+  *::after {
+    animation-duration: 0.01ms !important;
+    animation-iteration-count: 1 !important;
+    transition-duration: 0.01ms !important;
+  }
+}
