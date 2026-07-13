@@ -1,55 +1,31 @@
 "use client";
 
 import { useEffect, useMemo, useState } from "react";
-import { filterByDateRange, computeDashboard } from "@/lib/dashboard/compute";
+import { computeDashboard } from "@/lib/dashboard/compute";
 import type { DashboardPayload } from "@/lib/dashboard/data";
 import { MetricCard, ChampionCard, InsightCard } from "./cards";
 import { GoalArc } from "./goal-arc";
 import { PerformanceTable } from "./performance-table";
 import { DateRangePicker, FullscreenButton } from "./controls";
-import { PeriodSelector, formatPeriodLabel } from "./period-selector";
 import { ThemeToggle } from "@/components/theme-toggle";
-import { brl } from "./format";
+import { brl, shortDate } from "./format";
 
-export function Dashboard({
-  payload,
-  periods = [],
-}: {
-  payload: DashboardPayload;
-  periods?: string[];
-}) {
-  const { mesAno, sales, metas, diasNoMes, diasDecorridos, minDate, maxDate } = payload;
+export function Dashboard({ payload }: { payload: DashboardPayload }) {
+  const { from, to, boundsMin, boundsMax, sales, metas, diasNoMes, diasDecorridos } = payload;
 
-  const [from, setFrom] = useState(minDate ?? "");
-  const [to, setTo] = useState(maxDate ?? "");
   const [isFull, setIsFull] = useState(false);
-
-  // The intra-month range is scoped to the *current* period. When the period
-  // changes, the incoming min/max belong to a different month — carrying the
-  // old dates over would filter every sale out. Reset the range on period
-  // change so the new month always starts fully in view.
-  const [rangeKey, setRangeKey] = useState(mesAno);
-  if (rangeKey !== mesAno) {
-    setRangeKey(mesAno);
-    setFrom(minDate ?? "");
-    setTo(maxDate ?? "");
-  }
 
   const metasMap = useMemo(
     () => new Map(metas.map((m) => [m.profissionalId, m.valorMeta])),
     [metas],
   );
 
-  // Everything recomputes whenever the range changes — instant, client-side.
-  const data = useMemo(() => {
-    const filtered = filterByDateRange(sales, from, to);
-    // when a sub-range is picked, projection uses the selected span length
-    const spanDays =
-      from && to
-        ? Math.round((new Date(to).getTime() - new Date(from).getTime()) / 86400000) + 1
-        : diasDecorridos;
-    return computeDashboard(filtered, metasMap, spanDays, diasNoMes);
-  }, [sales, from, to, metasMap, diasDecorridos, diasNoMes]);
+  // `sales` already arrives filtered to the selected window by the server,
+  // so there is no second, client-side period filter to keep in sync.
+  const data = useMemo(
+    () => computeDashboard(sales, metasMap, diasDecorridos, diasNoMes),
+    [sales, metasMap, diasDecorridos, diasNoMes],
+  );
 
   const hasData = payload.sales.length > 0;
 
@@ -81,18 +57,8 @@ export function Dashboard({
           SR Consultoria — Hub de Performance
         </h1>
         <div className="flex items-center gap-3">
-          <PeriodSelector periods={periods} current={mesAno} />
-          {hasData && minDate && maxDate && (
-            <DateRangePicker
-              min={minDate}
-              max={maxDate}
-              from={from}
-              to={to}
-              onChange={(f, t) => {
-                setFrom(f);
-                setTo(t);
-              }}
-            />
+          {boundsMin && boundsMax && from && to && (
+            <DateRangePicker min={boundsMin} max={boundsMax} from={from} to={to} />
           )}
           <FullscreenButton onToggle={setIsFull} />
           <ThemeToggle />
@@ -102,11 +68,13 @@ export function Dashboard({
       {!hasData ? (
         <div className="glass mt-6 flex flex-1 flex-col items-center justify-center rounded-[18px] p-10 text-center">
           <p className="text-lg font-semibold text-ink">
-            Nenhuma venda importada para {formatPeriodLabel(mesAno)}.
+            {from && to
+              ? `Nenhuma venda entre ${shortDate(from)} e ${shortDate(to)}.`
+              : "Nenhuma venda importada ainda."}
           </p>
           <p className="mt-2 max-w-md text-sm text-ink-soft">
-            {periods.length > 0
-              ? "Selecione outro período acima ou importe o relatório deste mês na aba de metas."
+            {boundsMin && boundsMax
+              ? "Ajuste as datas acima para ver outro período, ou importe o relatório deste mês na aba de metas."
               : "Importe o relatório do período na aba de metas para ver o placar."}
           </p>
         </div>

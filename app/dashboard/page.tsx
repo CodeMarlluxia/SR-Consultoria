@@ -1,35 +1,45 @@
 import { Dashboard } from "@/components/dashboard/dashboard";
-import { loadDashboardPayload, getAvailablePeriods } from "@/lib/dashboard/data";
+import { loadDashboardPayload, getDataBounds } from "@/lib/dashboard/data";
 
 export const dynamic = "force-dynamic";
 
-/** Guard against a malformed ?periodo= value in the URL. */
-function isValidPeriod(p: string | undefined): p is string {
-  return typeof p === "string" && /^\d{4}-\d{2}$/.test(p);
+const isDate = (v: string | undefined): v is string =>
+  typeof v === "string" && /^\d{4}-\d{2}-\d{2}$/.test(v);
+
+/** First and last day of the month containing `isoDate`. */
+function monthWindow(isoDate: string): { from: string; to: string } {
+  const [y, m] = isoDate.split("-").map(Number);
+  const last = new Date(y, m, 0).getDate();
+  const mm = String(m).padStart(2, "0");
+  return { from: `${y}-${mm}-01`, to: `${y}-${mm}-${String(last).padStart(2, "0")}` };
 }
 
 export default async function DashboardPage({
   searchParams,
 }: {
-  searchParams: Promise<{ periodo?: string }>;
+  searchParams: Promise<{ de?: string; ate?: string }>;
 }) {
-  const { periodo } = await searchParams;
+  const { de, ate } = await searchParams;
 
-  // Every period that actually has sales, newest first.
-  const periods = await getAvailablePeriods();
+  // The date-range picker is the only period control. Its bounds are the full
+  // extent of imported data, so the user can reach any month from it.
+  const bounds = await getDataBounds();
 
-  // Honour ?periodo= when valid; otherwise fall back to the newest period
-  // that has data, then to the current month.
-  const requested = isValidPeriod(periodo) ? periodo : undefined;
-  const mesAno = requested ?? periods[0] ?? new Date().toISOString().slice(0, 7);
+  // Default window: the month of the most recent sale (or the current month
+  // when the database is still empty).
+  const fallback = monthWindow(bounds.max ?? new Date().toISOString().slice(0, 10));
 
-  // Re-queries Supabase scoped to `mesAno` — sales AND goals — on every
-  // period change, since navigation re-runs this Server Component.
-  const payload = await loadDashboardPayload(mesAno);
+  let from = isDate(de) ? de : fallback.from;
+  let to = isDate(ate) ? ate : fallback.to;
+  if (from > to) [from, to] = [to, from]; // tolerate an inverted window
+
+  // Re-queries Supabase on every window change — sales by data_venda, goals
+  // for every month the window touches.
+  const payload = await loadDashboardPayload(from, to);
 
   return (
     <main className="w-full overflow-hidden">
-      <Dashboard payload={payload} periods={periods} />
+      <Dashboard payload={payload} />
     </main>
   );
 }

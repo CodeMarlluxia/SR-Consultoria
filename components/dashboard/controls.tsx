@@ -1,47 +1,73 @@
 "use client";
 
-import { useEffect, useState } from "react";
+import { useRouter } from "next/navigation";
+import { useEffect, useState, useTransition } from "react";
 
-/** Intra-month date range picker. Emits ISO 'YYYY-MM-DD' bounds. */
+/**
+ * Date-range picker — the dashboard's ONLY period control.
+ *
+ * Picking a window pushes `?de=&ate=` onto the URL. `/dashboard` is a Server
+ * Component, so the navigation re-queries Supabase for that window (sales by
+ * data_venda, goals for every month it touches) and the whole tree re-renders.
+ * `min`/`max` span the full extent of imported data, so any month that was
+ * imported is reachable straight from these two inputs.
+ */
 export function DateRangePicker({
   min,
   max,
   from,
   to,
-  onChange,
 }: {
   min: string;
   max: string;
   from: string;
   to: string;
-  onChange: (from: string, to: string) => void;
 }) {
+  const router = useRouter();
+  const [pending, startTransition] = useTransition();
+
+  function apply(nextFrom: string, nextTo: string) {
+    if (!nextFrom || !nextTo) return;
+    // Tolerate an inverted window rather than silently showing nothing.
+    const [f, t] = nextFrom > nextTo ? [nextTo, nextFrom] : [nextFrom, nextTo];
+    if (f === from && t === to) return;
+    startTransition(() => {
+      router.push(`/dashboard?de=${f}&ate=${t}`);
+    });
+  }
+
+  const inputClass =
+    "rounded-md border border-ink-faint/25 bg-white/50 px-1.5 py-1 text-xs text-ink outline-none transition-colors focus:border-accent-lavender/60 disabled:opacity-60 dark:border-white/15 dark:bg-white/5 dark:[color-scheme:dark]";
+
   return (
-    <div className="glass flex items-center gap-1.5 rounded-lg px-2 py-1">
+    <div className="glass flex items-center gap-1.5 rounded-lg px-2 py-1" aria-busy={pending}>
       <input
         type="date"
         min={min}
-        max={to || max}
+        max={max}
         value={from}
-        onChange={(e) => onChange(e.target.value, to)}
-        className="rounded-md border border-ink-faint/25 bg-white/50 px-1.5 py-1 text-xs text-ink outline-none transition-colors focus:border-accent-lavender/60 dark:border-white/15 dark:bg-white/5 dark:[color-scheme:dark]"
+        disabled={pending}
+        onChange={(e) => apply(e.target.value, to)}
+        className={inputClass}
         aria-label="Data inicial"
       />
       <span className="text-xs text-ink-faint">–</span>
       <input
         type="date"
-        min={from || min}
+        min={min}
         max={max}
         value={to}
-        onChange={(e) => onChange(from, e.target.value)}
-        className="rounded-md border border-ink-faint/25 bg-white/50 px-1.5 py-1 text-xs text-ink outline-none transition-colors focus:border-accent-lavender/60 dark:border-white/15 dark:bg-white/5 dark:[color-scheme:dark]"
+        disabled={pending}
+        onChange={(e) => apply(from, e.target.value)}
+        className={inputClass}
         aria-label="Data final"
       />
       {(from !== min || to !== max) && (
         <button
-          onClick={() => onChange(min, max)}
-          className="rounded-md px-1.5 py-0.5 text-xs font-medium text-ink-soft transition-colors hover:text-ink"
-          aria-label="Limpar período"
+          onClick={() => apply(min, max)}
+          disabled={pending}
+          className="rounded-md px-1.5 py-0.5 text-xs font-medium text-ink-soft transition-colors hover:text-ink disabled:opacity-60"
+          aria-label="Ver todo o período disponível"
         >
           ✕
         </button>
