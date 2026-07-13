@@ -7,15 +7,33 @@ import { MetricCard, ChampionCard, InsightCard } from "./cards";
 import { GoalArc } from "./goal-arc";
 import { PerformanceTable } from "./performance-table";
 import { DateRangePicker, FullscreenButton } from "./controls";
+import { PeriodSelector, formatPeriodLabel } from "./period-selector";
 import { ThemeToggle } from "@/components/theme-toggle";
 import { brl } from "./format";
 
-export function Dashboard({ payload }: { payload: DashboardPayload }) {
-  const { sales, metas, diasNoMes, diasDecorridos, minDate, maxDate } = payload;
+export function Dashboard({
+  payload,
+  periods = [],
+}: {
+  payload: DashboardPayload;
+  periods?: string[];
+}) {
+  const { mesAno, sales, metas, diasNoMes, diasDecorridos, minDate, maxDate } = payload;
 
   const [from, setFrom] = useState(minDate ?? "");
   const [to, setTo] = useState(maxDate ?? "");
   const [isFull, setIsFull] = useState(false);
+
+  // The intra-month range is scoped to the *current* period. When the period
+  // changes, the incoming min/max belong to a different month — carrying the
+  // old dates over would filter every sale out. Reset the range on period
+  // change so the new month always starts fully in view.
+  const [rangeKey, setRangeKey] = useState(mesAno);
+  if (rangeKey !== mesAno) {
+    setRangeKey(mesAno);
+    setFrom(minDate ?? "");
+    setTo(maxDate ?? "");
+  }
 
   const metasMap = useMemo(
     () => new Map(metas.map((m) => [m.profissionalId, m.valorMeta])),
@@ -63,6 +81,7 @@ export function Dashboard({ payload }: { payload: DashboardPayload }) {
           SR Consultoria — Hub de Performance
         </h1>
         <div className="flex items-center gap-3">
+          <PeriodSelector periods={periods} current={mesAno} />
           {hasData && minDate && maxDate && (
             <DateRangePicker
               min={minDate}
@@ -81,10 +100,14 @@ export function Dashboard({ payload }: { payload: DashboardPayload }) {
       </div>
 
       {!hasData ? (
-        <div className="glass mt-6 rounded-[18px] p-10 text-center">
-          <p className="text-lg font-medium text-ink">Nenhuma venda importada para este período.</p>
-          <p className="mt-2 text-sm text-ink-soft">
-            Importe o relatório do período na aba de metas para ver o placar.
+        <div className="glass mt-6 flex flex-1 flex-col items-center justify-center rounded-[18px] p-10 text-center">
+          <p className="text-lg font-semibold text-ink">
+            Nenhuma venda importada para {formatPeriodLabel(mesAno)}.
+          </p>
+          <p className="mt-2 max-w-md text-sm text-ink-soft">
+            {periods.length > 0
+              ? "Selecione outro período acima ou importe o relatório deste mês na aba de metas."
+              : "Importe o relatório do período na aba de metas para ver o placar."}
           </p>
         </div>
       ) : (
