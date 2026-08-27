@@ -1,8 +1,12 @@
 import { createServerClient, type CookieOptions } from "@supabase/ssr";
 import { NextResponse, type NextRequest } from "next/server";
+import { getRole, isAdmin } from "@/lib/supabase/perfil";
 
 // Routes that don't require authentication.
 const PUBLIC_PATHS = ["/login", "/auth"];
+
+// Routes visible only to the 'admin' role — a 'usuario_padrao' bounces to /dashboard.
+const ADMIN_ONLY_PATHS = ["/importar", "/usuarios"];
 
 /**
  * Refreshes the Supabase session on every request and redirects
@@ -52,6 +56,17 @@ export async function updateSession(request: NextRequest) {
     url.pathname = "/dashboard";
     url.search = "";
     return NextResponse.redirect(url);
+  }
+
+  // 'usuario_padrao' só vê o Painel — abas administrativas redirecionam.
+  if (user && ADMIN_ONLY_PATHS.some((p) => pathname.startsWith(p))) {
+    const role = await getRole(supabase, user.id);
+    if (!isAdmin(role)) {
+      const url = request.nextUrl.clone();
+      url.pathname = "/dashboard";
+      url.search = "";
+      return NextResponse.redirect(url);
+    }
   }
 
   return response;

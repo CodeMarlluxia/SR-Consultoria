@@ -9,7 +9,7 @@ import { PerformanceTable } from "./performance-table";
 import { DateRangePicker, FullscreenButton } from "./controls";
 import { ThemeToggle } from "@/components/theme-toggle";
 import { brl, pct, shortDate } from "./format";
-import { IconSparkle, IconWallet, IconCoins, IconAward, IconTrophy, IconUsers, IconScissors, IconTag } from "@/components/icons";
+import { IconWallet, IconCoins, IconAward, IconTrophy, IconUsers, IconScissors, IconTag } from "@/components/icons";
 
 export function Dashboard({ payload }: { payload: DashboardPayload }) {
   const { from, to, boundsMin, boundsMax, sales, metas, diasNoMes, diasDecorridos } = payload;
@@ -48,23 +48,12 @@ export function Dashboard({ payload }: { payload: DashboardPayload }) {
   return (
     <div className={`${containerClass} flex flex-col`}>
       {/* ---- Cabeçalho ------------------------------------------------ */}
-      <div className="flex flex-shrink-0 items-center justify-between gap-4">
-        <div className="min-w-0">
-          <p className="eyebrow inline-flex items-center gap-1.5">
-            <IconSparkle className="h-3 w-3" aria-hidden />
-            Bem-vinda de volta
-          </p>
-          <h1 className="truncate font-display text-2xl font-semibold italic tracking-tight text-ink xl:text-3xl">
-            {from && to ? `Ranking de ${shortDate(from)} a ${shortDate(to)}` : "Ranking do período"}
-          </h1>
-        </div>
-        <div className="flex flex-shrink-0 items-center gap-2.5">
-          {boundsMin && boundsMax && from && to && (
-            <DateRangePicker min={boundsMin} max={boundsMax} from={from} to={to} />
-          )}
-          <FullscreenButton onToggle={setIsFull} />
-          <ThemeToggle />
-        </div>
+      <div className="flex flex-shrink-0 items-center justify-end gap-2.5">
+        {boundsMin && boundsMax && from && to && (
+          <DateRangePicker min={boundsMin} max={boundsMax} from={from} to={to} />
+        )}
+        <FullscreenButton onToggle={setIsFull} />
+        <ThemeToggle />
       </div>
 
       {!hasData ? (

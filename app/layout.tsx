@@ -1,18 +1,18 @@
 import type { Metadata } from "next";
-import { Fraunces, Manrope } from "next/font/google";
+import { Playfair_Display, Poppins } from "next/font/google";
 import { AppShell } from "@/components/app-shell";
 import "./globals.css";
 
-// Fraunces: serifa de eixo óptico com terminações macias — dá o tom
-// delicado sem cair no serif de alto contraste de sempre.
-// Manrope: sans geométrico de cantos suaves, excelente em tabular-nums.
-const display = Fraunces({
+// Playfair Display: serifa de alto contraste, elegante e feminina — usada
+// nos títulos e no logotipo. Poppins: geométrica arredondada, mantém boa
+// leitura em rótulos e números sem perder o tom delicado do conjunto.
+const display = Playfair_Display({
   subsets: ["latin"],
-  weight: ["400", "500", "600", "700"],
+  weight: ["500", "600", "700", "800"],
   variable: "--font-display",
   display: "swap",
 });
-const sans = Manrope({
+const sans = Poppins({
   subsets: ["latin"],
   weight: ["400", "500", "600", "700"],
   variable: "--font-sans",
@@ -22,6 +22,9 @@ const sans = Manrope({
 export const metadata: Metadata = {
   title: "SR Consultoria · Metas e Comissões",
   description: "Importe relatórios, defina metas e acompanhe comissões em tempo real.",
+  // Aponta para public/logo.png — quando o arquivo for salvo ali, vira o
+  // favicon automaticamente, sem precisar mexer em mais nada.
+  icons: { icon: "/logo.png" },
 };
 
 export default function RootLayout({ children }: { children: React.ReactNode }) {

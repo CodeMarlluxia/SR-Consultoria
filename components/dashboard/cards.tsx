@@ -47,7 +47,7 @@ export function MetricCard({
 
   return (
     <div
-      className={`card card-thread overflow-hidden bg-gradient-to-br ${t.tint} to-transparent px-4 pb-3.5 pt-4 transition-transform duration-300 hover:-translate-y-0.5`}
+      className={`card card-thread overflow-hidden bg-gradient-to-br ${t.tint} to-transparent px-4 pb-3.5 pt-4`}
       style={threadStyle(tone)}
     >
       <div className="flex items-start justify-between gap-2">
@@ -94,7 +94,7 @@ export function ChampionCard({
   return (
     <div
       className={[
-        "card card-thread overflow-hidden bg-gradient-to-br px-4 pb-3.5 pt-4 transition-transform duration-300 hover:-translate-y-0.5",
+        "card card-thread overflow-hidden bg-gradient-to-br px-4 pb-3.5 pt-4",
         t.tint,
         "to-transparent",
         highlight ? "ring-1 ring-brand-rose/60" : "",
@@ -151,7 +151,7 @@ export function InsightCard({
 
   return (
     <div
-      className={`card card-thread flex flex-col justify-center overflow-hidden bg-gradient-to-br ${t.tint} to-transparent px-4 pb-4 pt-4 transition-transform duration-300 hover:-translate-y-0.5`}
+      className={`card card-thread flex flex-col justify-center overflow-hidden bg-gradient-to-br ${t.tint} to-transparent px-4 pb-4 pt-4`}
       style={threadStyle(tone)}
     >
       <div className="flex items-start justify-between gap-2">

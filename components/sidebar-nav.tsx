@@ -3,20 +3,30 @@
 import Link from "next/link";
 import { usePathname } from "next/navigation";
 import type { SVGProps } from "react";
-import { IconHome, IconTarget } from "@/components/icons";
+import { IconHome, IconTarget, IconUsers } from "@/components/icons";
+import type { Role } from "@/lib/supabase/perfil";
 
-const ITEMS: { href: string; label: string; icon: (p: SVGProps<SVGSVGElement>) => React.ReactElement }[] = [
+type NavItem = {
+  href: string;
+  label: string;
+  icon: (p: SVGProps<SVGSVGElement>) => React.ReactElement;
+  adminOnly?: boolean;
+};
+
+const ITEMS: NavItem[] = [
   { href: "/dashboard", label: "Painel", icon: IconHome },
-  { href: "/importar", label: "Metas", icon: IconTarget },
+  { href: "/importar", label: "Metas", icon: IconTarget, adminOnly: true },
+  { href: "/usuarios", label: "Usuários", icon: IconUsers, adminOnly: true },
 ];
 
 /** Navegação vertical de ícones da sidebar. Cliente por causa do pathname ativo. */
-export function SidebarNav() {
+export function SidebarNav({ role }: { role: Role | null }) {
   const pathname = usePathname();
+  const items = ITEMS.filter((item) => !item.adminOnly || role === "admin");
 
   return (
     <nav className="flex flex-col items-center gap-2" aria-label="Navegação principal">
-      {ITEMS.map(({ href, label, icon: Icon }) => {
+      {items.map(({ href, label, icon: Icon }) => {
         const active = pathname === href || pathname?.startsWith(`${href}/`);
         return (
           <Link

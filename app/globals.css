@@ -9,7 +9,7 @@
 
   /* Single source of truth for the top navigation height so the dashboard
      viewport math (100dvh - nav) never drifts out of sync across screens. */
-  --nav-h: 68px;
+  --nav-h: 78px;
   /* Width of the icon sidebar shown to authenticated users. */
   --sidebar-w: 84px;
 

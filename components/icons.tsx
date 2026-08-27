@@ -121,6 +121,26 @@ export function IconCheckCircle(props: SVGProps<SVGSVGElement>) {
   );
 }
 
+export function IconUserPlus(props: SVGProps<SVGSVGElement>) {
+  return (
+    <svg {...base} {...props}>
+      <circle cx="9" cy="8" r="3.3" />
+      <path d="M3 19c.6-3.3 2.9-5.2 6-5.2s5.4 1.9 6 5.2" />
+      <path d="M18 8v5M15.5 10.5h5" />
+    </svg>
+  );
+}
+
+export function IconLogout(props: SVGProps<SVGSVGElement>) {
+  return (
+    <svg {...base} {...props}>
+      <path d="M9 4H6a2 2 0 0 0-2 2v12a2 2 0 0 0 2 2h3" />
+      <path d="M14.5 16 19 12l-4.5-4" />
+      <path d="M19 12H9" />
+    </svg>
+  );
+}
+
 export function IconX(props: SVGProps<SVGSVGElement>) {
   return (
     <svg {...base} {...props}>
