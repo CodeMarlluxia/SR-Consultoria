@@ -1,10 +1,29 @@
 import type { Config } from "tailwindcss";
 
 // =====================================================================
-//  "Luxo Pastel" — soft glass-morphism design tokens
+//  SR Consultoria — "Atelier Pastel"
+//  Os pastéis da marca vivem em `brand`. Como pastel não carrega texto,
+//  cada matiz tem um par escuro em `deep` (mesma matiz, luminosidade
+//  rebaixada até passar em WCAG AA sobre fundo claro).
+//  `pastel` e `accent` são aliases mantidos por compatibilidade.
 // =====================================================================
+const brand = {
+  rose: "#f8b4c4",
+  butter: "#f0e6a8",
+  mint: "#b8e8c8",
+  sky: "#a8d8f0",
+  lilac: "#d4b8f0",
+};
+
+const deep = {
+  rose: "#b0576d",
+  butter: "#86722a",
+  mint: "#3f7a58",
+  sky: "#3e6b87",
+  lilac: "#6c4e9c",
+};
+
 const config: Config = {
-  darkMode: "class",
   content: [
     "./app/**/*.{ts,tsx}",
     "./components/**/*.{ts,tsx}",
@@ -13,66 +32,69 @@ const config: Config = {
   theme: {
     extend: {
       colors: {
-        // Ink text ramp — driven by CSS vars so it flips in dark mode.
+        brand,
+        deep,
         ink: {
-          DEFAULT: "var(--ink)",
-          soft: "var(--ink-soft)",
-          faint: "var(--ink-faint)",
+          DEFAULT: "#3f3a4d",
+          soft: "#655e72",
+          faint: "#948da3",
         },
-        // Pastel accent palette (used for decorative gradients / fills).
+        page: "#fdf8fb",
+
+        // --- aliases legados (telas ainda não migradas) ---------------
         pastel: {
-          rose: "#f8b4c4",
-          gold: "#f0e6a8",
-          mint: "#b8e8c8",
-          serenity: "#a8d8f0",
-          lavender: "#d4b8f0",
+          rose: brand.rose,
+          gold: brand.butter,
+          mint: brand.mint,
+          serenity: brand.sky,
+          lavender: brand.lilac,
         },
-        // Sober, harmonized value/text accents — CSS vars so they brighten
-        // in dark mode while keeping the same feminine hues.
         accent: {
-          rose: "var(--accent-rose)",
-          gold: "var(--accent-gold)",
-          mint: "var(--accent-mint)",
-          serenity: "var(--accent-serenity)",
-          lavender: "var(--accent-lavender)",
+          rose: deep.rose,
+          gold: deep.butter,
+          mint: deep.mint,
+          serenity: deep.sky,
+          lavender: deep.lilac,
         },
-        // Neutral surface ramp (kept as `base` so existing utilities resolve)
         base: {
-          DEFAULT: "#fdf7fa",
-          900: "#fdf7fa",
+          DEFAULT: "#fdf8fb",
+          900: "#fdf8fb",
           800: "#ffffff",
-          700: "#f7f0fb",
-          600: "#e7dff0",
+          700: "#f8f1fa",
+          600: "#ece4f2",
         },
-        text: {
-          DEFAULT: "var(--ink)",
-          dim: "var(--ink-faint)",
-        },
+        text: { DEFAULT: "#3f3a4d", dim: "#948da3" },
       },
       fontFamily: {
-        display: ["var(--font-display)", "'Playfair Display'", "Georgia", "serif"],
-        sans: ["var(--font-sans)", "'Montserrat'", "system-ui", "sans-serif"],
-        mono: ["var(--font-mono)", "ui-monospace", "monospace"],
+        display: ["var(--font-display)", "'Fraunces'", "Georgia", "serif"],
+        sans: ["var(--font-sans)", "'Manrope'", "system-ui", "sans-serif"],
+        mono: ["ui-monospace", "SFMono-Regular", "monospace"],
+      },
+      borderRadius: {
+        card: "22px",
+        pill: "999px",
       },
       boxShadow: {
-        glass: "0 10px 40px rgba(248,180,196,0.15)",
-        "glass-lg": "0 20px 55px rgba(248,180,196,0.28)",
-        "glow-rose": "0 10px 30px rgba(248,180,196,0.30)",
-        "glow-lavender": "0 10px 30px rgba(212,184,240,0.30)",
+        soft: "0 1px 2px rgba(63,58,77,0.04), 0 14px 34px -20px rgba(176,87,109,0.30)",
+        lift: "0 2px 4px rgba(63,58,77,0.05), 0 24px 46px -22px rgba(176,87,109,0.42)",
+        // aliases legados
+        glass: "0 1px 2px rgba(63,58,77,0.04), 0 14px 34px -20px rgba(176,87,109,0.30)",
+        "glass-lg": "0 2px 4px rgba(63,58,77,0.05), 0 24px 46px -22px rgba(176,87,109,0.42)",
+        "glow-rose": "0 12px 30px -14px rgba(176,87,109,0.5)",
+        "glow-lavender": "0 12px 30px -14px rgba(108,78,156,0.5)",
       },
       keyframes: {
-        aurora: {
-          "0%": { backgroundPosition: "0% 50%" },
-          "50%": { backgroundPosition: "100% 50%" },
-          "100%": { backgroundPosition: "0% 50%" },
-        },
         "fade-rise": {
-          "0%": { opacity: "0", transform: "translateY(12px)" },
+          "0%": { opacity: "0", transform: "translateY(10px)" },
           "100%": { opacity: "1", transform: "translateY(0)" },
         },
-        "progress-shine": {
-          "0%": { transform: "translateX(-100%)" },
-          "100%": { transform: "translateX(200%)" },
+        "pearl-in": {
+          "0%": { opacity: "0", transform: "scale(0.4)" },
+          "100%": { opacity: "1", transform: "scale(1)" },
+        },
+        float: {
+          "0%, 100%": { transform: "translateY(0)" },
+          "50%": { transform: "translateY(-4px)" },
         },
         laser: {
           "0%": { top: "0%", opacity: "0" },
@@ -84,21 +106,16 @@ const config: Config = {
           "0%": { transform: "translateX(-50%)" },
           "100%": { transform: "translateX(0)" },
         },
-        float: {
-          "0%, 100%": { transform: "translateY(0)" },
-          "50%": { transform: "translateY(-5px)" },
-        },
         bob: {
           "0%, 100%": { transform: "translateY(0) rotate(-4deg)" },
           "50%": { transform: "translateY(-5px) rotate(4deg)" },
         },
       },
       animation: {
-        aurora: "aurora 18s ease-in-out infinite",
-        "fade-rise": "fade-rise 0.5s ease-out forwards",
-        "progress-shine": "progress-shine 1.8s ease-in-out infinite",
+        "fade-rise": "fade-rise 0.5s cubic-bezier(.2,.8,.2,1) forwards",
+        "pearl-in": "pearl-in 0.6s cubic-bezier(.2,.8,.2,1) forwards",
+        float: "float 3.4s ease-in-out infinite",
         wave: "wave 2.5s linear infinite",
-        float: "float 3s ease-in-out infinite",
         bob: "bob 2.5s ease-in-out infinite",
       },
     },

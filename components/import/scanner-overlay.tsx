@@ -8,7 +8,7 @@ export function ScannerOverlay({ active }: { active: boolean }) {
   if (!active) return null;
 
   return (
-    <div className="absolute inset-0 z-10 flex flex-col items-center justify-center rounded-[18px] bg-white/80">
+    <div className="absolute inset-0 z-10 flex flex-col items-center justify-center rounded-card bg-white/85">
       <div className="relative h-[150px] w-[120px] overflow-hidden rounded-lg border-2 border-pastel-serenity/60 bg-pastel-serenity/10">
         {/* stacked "text lines" of the doc */}
         <div className="absolute inset-x-3 top-4 space-y-3">
@@ -23,9 +23,7 @@ export function ScannerOverlay({ active }: { active: boolean }) {
         />
       </div>
       <p
-        className="mt-6 text-sm font-semibold uppercase tracking-[0.15em] text-accent-lavender"
-        style={{ textShadow: "0 0 10px rgba(65,105,225,0.5)" }}
-      >
+        className="eyebrow mt-6">
         Escaneando documento…
       </p>
     </div>

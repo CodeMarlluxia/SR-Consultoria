@@ -3,101 +3,137 @@
 import { brl } from "./format";
 import { useCountUp } from "./use-count-up";
 
-const RADIUS = 68;
-const CIRC = 2 * Math.PI * RADIUS;
+// ---------------------------------------------------------------------
+//  Elemento assinatura: o "Anel da Meta".
+//  O arco percorre as cinco cores da marca na ordem da paleta e termina
+//  numa pérola — o marcador que mostra exatamente onde a equipe parou.
+//  Pétalas discretas marcam 25 / 50 / 75 / 100%.
+// ---------------------------------------------------------------------
+const SIZE = 208;
+const C = SIZE / 2;
+const R = 84;
+const CIRC = 2 * Math.PI * R;
+const STROKE = 13;
 
-/**
- * Global team-goal card. Content is spread across the available space:
- * a heading, a focal progress ring, and the key figures laid out in an even
- * horizontal row (no vertical stacking), centered within the card.
- */
+function pointAt(percent: number): { x: number; y: number } {
+  const rad = ((percent * 3.6 - 90) * Math.PI) / 180;
+  return { x: C + R * Math.cos(rad), y: C + R * Math.sin(rad) };
+}
+
 export function GoalArc({
   realizado,
   meta,
   progressoPct,
+  premiacao,
+  metasBatidas,
+  totalPessoas,
 }: {
   realizado: number;
   meta: number | null;
   progressoPct: number | null;
+  premiacao: number;
+  metasBatidas: number;
+  totalPessoas: number;
 }) {
-  const pct = progressoPct ?? 0;
-  const clamped = Math.min(pct, 100);
-  const animatedPct = useCountUp(pct, 1600);
+  const value = progressoPct ?? 0;
+  const clamped = Math.min(value, 100);
+  const animated = useCountUp(value, 1400);
   const offset = CIRC * (1 - clamped / 100);
+  const pearl = pointAt(clamped);
   const falta = meta ? Math.max(0, meta - realizado) : null;
+  const excedente = meta ? Math.max(0, realizado - meta) : 0;
 
   return (
-    <div className="glass flex h-full flex-col items-center justify-center gap-4 rounded-[18px] px-6 py-5">
-      <h3 className="font-display text-xl font-semibold tracking-tight text-ink">
-        Meta Geral da Equipe
-      </h3>
+    <div className="card flex flex-wrap items-center gap-x-9 gap-y-6 px-6 py-6">
+      <div className="relative flex-shrink-0" style={{ width: SIZE, height: SIZE }}>
+        <svg viewBox={`0 0 ${SIZE} ${SIZE}`} width={SIZE} height={SIZE} role="img"
+             aria-label={`Progresso da meta geral: ${Math.round(value)} por cento`}>
+          <defs>
+            <linearGradient id="metaRing" x1="0" y1="0" x2="1" y2="1">
+              <stop offset="0" stopColor="var(--rose)" />
+              <stop offset="0.3" stopColor="var(--butter)" />
+              <stop offset="0.6" stopColor="var(--mint)" />
+              <stop offset="0.82" stopColor="var(--sky)" />
+              <stop offset="1" stopColor="var(--lilac)" />
+            </linearGradient>
+          </defs>
 
-      <div className="flex w-full flex-1 flex-wrap items-center justify-around gap-6">
-        {/* Focal progress ring */}
-        <div className="relative h-[172px] w-[172px] flex-shrink-0">
-          <svg viewBox="0 0 172 172" width={172} height={172}>
-            <circle cx={86} cy={86} r={RADIUS} fill="none" stroke="rgba(154,148,168,0.18)" strokeWidth={15} />
-            <circle
-              cx={86}
-              cy={86}
-              r={RADIUS}
-              fill="none"
-              stroke="url(#goalGrad)"
-              strokeWidth={15}
-              strokeLinecap="round"
-              transform="rotate(-90 86 86)"
-              strokeDasharray={CIRC}
-              strokeDashoffset={offset}
-              style={{ transition: "stroke-dashoffset 2.4s cubic-bezier(.45,.05,.2,1)" }}
-            />
-            <defs>
-              <linearGradient id="goalGrad" x1="0" y1="0" x2="1" y2="1">
-                <stop offset="0" stopColor="#c98da0" />
-                <stop offset="0.5" stopColor="#a68fb8" />
-                <stop offset="1" stopColor="#8fb89e" />
-              </linearGradient>
-            </defs>
-          </svg>
-          <div className="absolute inset-0 flex flex-col items-center justify-center">
-            <div className="font-display text-4xl font-semibold tabular-nums text-accent-lavender">
-              {Math.round(animatedPct)}%
-            </div>
-            <div className="text-xs uppercase tracking-[0.12em] text-ink-faint">da meta</div>
-          </div>
-        </div>
+          {/* trilho */}
+          <circle cx={C} cy={C} r={R} fill="none" stroke="rgba(63,58,77,0.07)" strokeWidth={STROKE} />
 
-        {/* Key figures spread evenly (horizontal, not stacked) */}
-        <div className="flex flex-1 flex-wrap items-center justify-around gap-6">
-          <Stat k="Realizado" v={brl(realizado)} highlight />
-          <Stat k="Meta" v={meta ? brl(meta) : "—"} big />
-          <Stat k="Faltam" v={falta !== null ? brl(falta) : "—"} />
+          {/* pétalas de referência */}
+          {[25, 50, 75, 100].map((p) => {
+            const outer = pointAt(p);
+            return (
+              <circle
+                key={p}
+                cx={outer.x}
+                cy={outer.y}
+                r={2}
+                fill="rgba(63,58,77,0.18)"
+              />
+            );
+          })}
+
+          {/* arco preenchido */}
+          <circle
+            cx={C}
+            cy={C}
+            r={R}
+            fill="none"
+            stroke="url(#metaRing)"
+            strokeWidth={STROKE}
+            strokeLinecap="round"
+            transform={`rotate(-90 ${C} ${C})`}
+            strokeDasharray={CIRC}
+            strokeDashoffset={offset}
+            style={{ transition: "stroke-dashoffset 1.5s cubic-bezier(.2,.8,.2,1)" }}
+          />
+
+          {/* pérola marcadora */}
+          <g style={{ transition: "transform 1.5s cubic-bezier(.2,.8,.2,1)" }}>
+            <circle cx={pearl.x} cy={pearl.y} r={9} fill="#ffffff" opacity={0.95} />
+            <circle cx={pearl.x} cy={pearl.y} r={5} fill="var(--rose)" />
+          </g>
+        </svg>
+
+        <div className="pointer-events-none absolute inset-0 flex flex-col items-center justify-center">
+          <span className="font-display text-[2.6rem] font-semibold leading-none tabular-nums text-ink">
+            {Math.round(animated)}
+            <span className="text-2xl text-ink-soft">%</span>
+          </span>
+          <span className="eyebrow mt-1.5">da meta geral</span>
         </div>
+      </div>
+
+      <div className="min-w-[240px] flex-1">
+        <h2 className="font-display text-xl font-semibold text-ink">Meta da equipe</h2>
+        <p className="mt-1 text-sm text-ink-soft">
+          {totalPessoas > 0
+            ? `${metasBatidas} de ${totalPessoas} ${totalPessoas === 1 ? "profissional bateu" : "profissionais bateram"} a meta`
+            : "Nenhuma profissional no período"}
+        </p>
+
+        <dl className="mt-5 grid grid-cols-2 gap-x-6 gap-y-4 sm:grid-cols-3">
+          <Stat k="Realizado" v={brl(realizado)} tone="text-deep-mint" />
+          <Stat k="Meta" v={meta ? brl(meta) : "—"} />
+          <Stat
+            k={excedente > 0 ? "Excedente" : "Faltam"}
+            v={excedente > 0 ? brl(excedente) : falta !== null ? brl(falta) : "—"}
+            tone={excedente > 0 ? "text-deep-lilac" : undefined}
+          />
+          <Stat k="Premiação da equipe" v={brl(premiacao)} tone="text-deep-rose" />
+        </dl>
       </div>
     </div>
   );
 }
 
-function Stat({
-  k,
-  v,
-  highlight,
-  big,
-}: {
-  k: string;
-  v: string;
-  highlight?: boolean;
-  big?: boolean;
-}) {
+function Stat({ k, v, tone }: { k: string; v: string; tone?: string }) {
   return (
-    <div className="text-center">
-      <div className="mb-1 text-xs uppercase tracking-[0.1em] text-ink-faint">{k}</div>
-      <div
-        className={`font-semibold tabular-nums ${big ? "font-display text-3xl" : "text-2xl"} ${
-          highlight ? "text-accent-mint" : "text-ink"
-        }`}
-      >
-        {v}
-      </div>
+    <div>
+      <dt className="eyebrow">{k}</dt>
+      <dd className={`mt-1 text-lg font-semibold tabular-nums ${tone ?? "text-ink"}`}>{v}</dd>
     </div>
   );
 }

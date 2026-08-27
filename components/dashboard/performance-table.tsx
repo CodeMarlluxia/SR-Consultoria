@@ -1,221 +1,250 @@
 "use client";
 
-import { useEffect, useRef, useState } from "react";
+import { useEffect, useMemo, useState } from "react";
 import type { ProfPerformance } from "@/lib/dashboard/compute";
-import { brl, initials, progressBand } from "./format";
+import { brl, initials, pct, progressBand, rankBadge } from "./format";
 
-const GRID_COLS =
-  "grid-cols-[44px_1.6fr_1fr_1fr_1.6fr_1fr] max-lg:grid-cols-[36px_1.4fr_1fr_1fr] max-lg:gap-3";
+// ---------------------------------------------------------------------
+//  Ranking. A posição e o troféu vêm SEMPRE do percentual de atingimento
+//  da meta (row.posicao, calculada em compute.ts). Reordenar a tabela por
+//  outra coluna é apenas uma lente de leitura: o selo de posição continua
+//  refletindo o ranking oficial.
+// ---------------------------------------------------------------------
+type SortKey = "posicao" | "faturamento" | "meta" | "progresso" | "premiacao" | "comissao";
 
-/**
- * `fitToHeight`: the table fills its parent's height and distributes rows
- * evenly so the whole ranking is visible with NO scrolling. Font sizes scale
- * with the per-row height (clamped) so it stays legible with few or many rows.
- */
-export function PerformanceTable({
-  rows,
-  fitToHeight = false,
-}: {
-  rows: ProfPerformance[];
-  fitToHeight?: boolean;
-}) {
-  const bodyRef = useRef<HTMLDivElement>(null);
-  const [rowHeight, setRowHeight] = useState(0);
-  const [scale, setScale] = useState(1);
+const COLS =
+  "grid-cols-[38px_minmax(0,1fr)_6.5rem] " +
+  "md:grid-cols-[42px_minmax(0,1.2fr)_7rem_minmax(0,1.4fr)] " +
+  "lg:grid-cols-[46px_minmax(0,1.25fr)_7rem_7rem_minmax(0,1.5fr)_7rem_7rem]";
 
-  useEffect(() => {
-    if (!fitToHeight) return;
+export function PerformanceTable({ rows }: { rows: ProfPerformance[] }) {
+  const [sortKey, setSortKey] = useState<SortKey>("posicao");
+  const [desc, setDesc] = useState(false);
+  const [query, setQuery] = useState("");
 
-    function recalc() {
-      const el = bodyRef.current;
-      if (!el || rows.length === 0) return;
-      const available = el.clientHeight;
-      if (available <= 0) return;
-      const per = available / rows.length;
-      setRowHeight(per);
-      // Base design row ≈ 64px at scale 1; keep text legible but bounded.
-      setScale(Math.max(0.9, Math.min(1.5, per / 58)));
-    }
+  const visible = useMemo(() => {
+    const q = query.trim().toLowerCase();
+    const filtered = q ? rows.filter((r) => r.nome.toLowerCase().includes(q)) : rows;
 
-    recalc();
-    const raf = requestAnimationFrame(recalc);
-    const t = setTimeout(recalc, 150);
-    const ro = new ResizeObserver(recalc);
-    if (bodyRef.current) ro.observe(bodyRef.current);
-    window.addEventListener("resize", recalc);
-    return () => {
-      cancelAnimationFrame(raf);
-      clearTimeout(t);
-      ro.disconnect();
-      window.removeEventListener("resize", recalc);
+    const pick = (r: ProfPerformance): number => {
+      switch (sortKey) {
+        case "faturamento": return r.faturamento;
+        case "meta": return r.meta ?? -1;
+        case "progresso": return r.progressoPct ?? -1;
+        case "premiacao": return r.premiacao;
+        case "comissao": return r.comissaoAcumulada;
+        default: return r.posicao;
+      }
     };
-  }, [fitToHeight, rows.length]);
+
+    // 'posicao' já é a ordem oficial (crescente = melhor colocada primeiro).
+    const dir = sortKey === "posicao" ? (desc ? -1 : 1) : desc ? 1 : -1;
+    return [...filtered].sort((a, b) => (pick(a) - pick(b)) * dir);
+  }, [rows, sortKey, desc, query]);
+
+  function toggle(key: SortKey) {
+    if (key === sortKey) {
+      setDesc((d) => !d);
+    } else {
+      setSortKey(key);
+      setDesc(false);
+    }
+  }
 
   return (
-    <div className={`glass flex flex-col rounded-[18px] p-4 ${fitToHeight ? "h-full" : ""}`}>
-      <h3
-        className="mb-2 flex-shrink-0 font-display font-semibold text-ink"
-        style={{ fontSize: fitToHeight ? `${1.3 * scale}rem` : "1.3rem" }}
-      >
-        Ranking de Vendas
-      </h3>
+    <section className="card px-5 pb-4 pt-5">
+      <header className="mb-4 flex flex-wrap items-end justify-between gap-3">
+        <div>
+          <p className="eyebrow">Ranking por atingimento da meta</p>
+          <h2 className="mt-1 font-display text-xl font-semibold text-ink">
+            Desempenho individual
+          </h2>
+        </div>
+        <input
+          type="search"
+          value={query}
+          onChange={(e) => setQuery(e.target.value)}
+          placeholder="Buscar profissional"
+          aria-label="Buscar profissional"
+          className="field w-full px-3.5 py-2 text-sm sm:w-56"
+        />
+      </header>
 
-      <TableHeader scale={fitToHeight ? scale : 1} />
+      <TableHeader sortKey={sortKey} desc={desc} onSort={toggle} />
 
-      <div ref={bodyRef} className={`flex flex-col ${fitToHeight ? "min-h-0 flex-1" : ""}`}>
-        {rows.length === 0 ? (
-          <p className="px-2 py-8 text-center text-sm text-ink-soft">
-            Nenhuma venda no período selecionado.
+      <div role="list">
+        {visible.length === 0 ? (
+          <p className="px-2 py-10 text-center text-sm text-ink-soft">
+            {query
+              ? `Nenhuma profissional encontrada para “${query}”.`
+              : "Nenhuma venda no período selecionado."}
           </p>
         ) : (
-          rows.map((r, i) => (
-            <PerfRow
-              key={r.profissionalId}
-              row={r}
-              rank={i}
-              fitToHeight={fitToHeight}
-              rowHeight={rowHeight}
-              scale={scale}
-            />
-          ))
+          visible.map((r) => <PerfRow key={r.profissionalId} row={r} />)
         )}
       </div>
-    </div>
+
+      <p className="mt-4 border-t border-ink-faint/15 pt-3 text-xs text-ink-soft">
+        Premiação: 10% sobre o valor que ultrapassar a meta. Abaixo de 100%, R$ 0,00.
+      </p>
+    </section>
   );
 }
 
-function TableHeader({ scale }: { scale: number }) {
+function SortButton({
+  label,
+  col,
+  sortKey,
+  desc,
+  onSort,
+  className = "",
+}: {
+  label: string;
+  col: SortKey;
+  sortKey: SortKey;
+  desc: boolean;
+  onSort: (k: SortKey) => void;
+  className?: string;
+}) {
+  const active = sortKey === col;
+  return (
+    <button
+      type="button"
+      onClick={() => onSort(col)}
+      aria-sort={active ? (desc ? "descending" : "ascending") : "none"}
+      className={`eyebrow inline-flex items-center gap-1 text-left transition-colors hover:text-ink ${
+        active ? "text-ink" : ""
+      } ${className}`}
+    >
+      {label}
+      <span aria-hidden className={active ? "opacity-70" : "opacity-0"}>
+        {desc ? "▾" : "▴"}
+      </span>
+    </button>
+  );
+}
+
+function TableHeader({
+  sortKey,
+  desc,
+  onSort,
+}: {
+  sortKey: SortKey;
+  desc: boolean;
+  onSort: (k: SortKey) => void;
+}) {
   return (
     <div
-      className={`grid ${GRID_COLS} flex-shrink-0 items-center gap-4 border-b border-ink-faint/20 px-2 pb-2 font-medium uppercase tracking-[0.08em] text-ink-faint`}
-      style={{ fontSize: `${Math.max(0.7, 0.8 * scale)}rem` }}
+      className={`grid ${COLS} items-center gap-4 border-b border-ink-faint/20 px-2 pb-2.5`}
     >
-      <div>#</div>
-      <div>Vendedora</div>
-      <div>Faturamento</div>
-      <div className="max-lg:hidden">Meta Definida</div>
-      <div className="max-lg:hidden">Progresso da meta</div>
-      <div>Comissão</div>
+      <SortButton label="#" col="posicao" sortKey={sortKey} desc={desc} onSort={onSort} />
+      <span className="eyebrow">Profissional</span>
+      <SortButton label="Faturamento" col="faturamento" sortKey={sortKey} desc={desc} onSort={onSort} />
+      <SortButton label="Meta" col="meta" sortKey={sortKey} desc={desc} onSort={onSort} className="hidden lg:inline-flex" />
+      <SortButton label="Progresso" col="progresso" sortKey={sortKey} desc={desc} onSort={onSort} className="hidden md:inline-flex" />
+      <SortButton label="Premiação" col="premiacao" sortKey={sortKey} desc={desc} onSort={onSort} className="hidden lg:inline-flex" />
+      <SortButton label="Comissão" col="comissao" sortKey={sortKey} desc={desc} onSort={onSort} className="hidden lg:inline-flex" />
     </div>
   );
 }
 
-function PerfRow({
-  row,
-  rank,
-  fitToHeight,
-  rowHeight,
-  scale,
-}: {
-  row: ProfPerformance;
-  rank: number;
-  fitToHeight: boolean;
-  rowHeight: number;
-  scale: number;
-}) {
+function PerfRow({ row }: { row: ProfPerformance }) {
   const band = progressBand(row.progressoPct);
   const target = Math.min(row.progressoPct ?? 0, 100);
   const [width, setWidth] = useState(0);
+  const lider = row.posicao === 0 && row.progressoPct !== null;
+  const bateu = row.progressoPct !== null && row.progressoPct >= 100;
 
-  // Slow, smooth, harmonious fill. Two rAF ticks guarantee the browser paints
-  // the 0% start state before transitioning to the target, so the animation
-  // reliably plays (a plain state set can be batched and skip the transition).
   useEffect(() => {
-    setWidth(0);
-    let raf2 = 0;
-    const raf1 = requestAnimationFrame(() => {
-      raf2 = requestAnimationFrame(() => setWidth(target));
-    });
-    return () => {
-      cancelAnimationFrame(raf1);
-      cancelAnimationFrame(raf2);
-    };
+    const t = setTimeout(() => setWidth(target), 120);
+    return () => clearTimeout(t);
   }, [target]);
 
-  const faltam =
-    row.meta && row.meta > row.faturamento ? row.meta - row.faturamento : null;
-
-  const fs = (rem: number) => ({ fontSize: `${+(rem * scale).toFixed(3)}rem` });
-  const avatarPx = Math.round(38 * scale);
-  const barPx = Math.max(6, Math.round(9 * scale));
-
-  const rowStyle = fitToHeight && rowHeight ? { height: `${rowHeight}px` } : undefined;
+  const falta = row.meta && row.meta > row.faturamento ? row.meta - row.faturamento : null;
 
   return (
     <div
-      className={`grid ${GRID_COLS} items-center gap-4 overflow-hidden rounded-[12px] px-2 transition-colors hover:bg-white/40 dark:hover:bg-white/5 ${
-        fitToHeight ? "" : "border-b border-ink-faint/10 py-3 last:border-none"
-      }`}
-      style={rowStyle}
+      role="listitem"
+      className={[
+        "grid",
+        COLS,
+        "items-center gap-4 rounded-2xl border-b border-ink-faint/10 px-2 py-3.5 transition-colors last:border-none hover:bg-white/55",
+        lider ? "bg-gradient-to-r from-brand-rose/15 to-transparent" : "",
+      ].join(" ")}
     >
-      <div
-        className={`text-center font-semibold ${rank === 0 ? "" : "text-ink-faint"}`}
-        style={fs(1.3)}
+      {/* posição */}
+      <span
+        className={`text-center text-sm font-semibold tabular-nums ${
+          row.posicao < 3 ? "text-base" : "text-ink-faint"
+        }`}
+        title={`${row.posicao + 1}ª colocada por atingimento da meta`}
       >
-        {rank === 0 ? "🏆" : rank + 1}
-      </div>
+        {rankBadge(row.posicao)}
+      </span>
 
-      <div className="flex min-w-0 items-center gap-2.5">
-        <div
-          className="flex flex-shrink-0 items-center justify-center rounded-full font-semibold text-white"
-          style={{
-            width: avatarPx,
-            height: avatarPx,
-            fontSize: `${0.8 * scale}rem`,
-            background: "linear-gradient(135deg,#9db8c9,#a3c2ae)",
-          }}
+      {/* profissional */}
+      <div className="flex min-w-0 items-center gap-3">
+        <span
+          className="flex h-9 w-9 flex-shrink-0 items-center justify-center rounded-full bg-gradient-to-br from-brand-sky to-brand-mint text-[0.7rem] font-semibold text-ink"
+          aria-hidden
         >
           {initials(row.nome)}
-        </div>
-        <div className="min-w-0">
-          <div className="truncate font-medium text-ink" style={fs(1.15)}>
+        </span>
+        <span className="min-w-0">
+          <span className="block truncate text-sm font-semibold text-ink" title={row.nome}>
             {row.nome}
-          </div>
-          <div className="truncate text-ink-faint" style={fs(0.85)}>
-            {row.qtdLinhas} atendimentos
-          </div>
-        </div>
-      </div>
-
-      <div className="font-semibold tabular-nums text-accent-mint" style={fs(1.1)}>
-        {brl(row.faturamento)}
-      </div>
-
-      <div className="font-medium tabular-nums text-ink-soft max-lg:hidden" style={fs(1.1)}>
-        {row.meta ? brl(row.meta) : "—"}
-      </div>
-
-      <div className="flex min-w-0 flex-col gap-1 max-lg:hidden">
-        <div className="flex justify-between" style={fs(0.9)}>
-          <span className="truncate text-ink-soft">{band.label}</span>
-          <span className="ml-2 flex-shrink-0 font-semibold tabular-nums text-ink">
-            {row.progressoPct !== null ? `${row.progressoPct}%` : "—"}
           </span>
-        </div>
-        <div
-          className="relative overflow-hidden rounded-full bg-ink-faint/[0.15]"
-          style={{ height: barPx }}
-        >
-          <div
-            className="absolute inset-y-0 left-0 overflow-hidden rounded-full"
+          <span className="block text-xs text-ink-faint">{row.qtdLinhas} atendimentos</span>
+        </span>
+      </div>
+
+      {/* faturamento */}
+      <span className="text-sm font-semibold tabular-nums text-ink">{brl(row.faturamento)}</span>
+
+      {/* meta */}
+      <span className="hidden text-sm tabular-nums text-ink-soft lg:block">
+        {row.meta ? brl(row.meta) : "—"}
+      </span>
+
+      {/* progresso */}
+      <div className="hidden flex-col gap-1.5 md:flex">
+        <span className="flex items-baseline justify-between gap-2 text-xs">
+          <span className={band.text}>{band.label}</span>
+          <span className="font-semibold tabular-nums text-ink">{pct(row.progressoPct)}</span>
+        </span>
+        <span className="relative block h-1.5 overflow-hidden rounded-pill bg-ink-faint/15">
+          <span
+            className="absolute inset-y-0 left-0 block rounded-pill"
             style={{
               width: `${width}%`,
-              background: "linear-gradient(90deg,#c98da0,#a68fb8 50%,#8fb89e)",
-              // Slow & smooth: long ease so the fill glides in harmoniously.
-              transition: "width 2.6s cubic-bezier(.45,.05,.2,1)",
+              background: band.bar,
+              transition: "width 1.2s cubic-bezier(.2,.8,.2,1)",
             }}
           />
-        </div>
-        {faltam !== null && (
-          <div className="truncate text-ink-faint" style={fs(0.84)}>
-            Faltam {brl(faltam)}
-          </div>
+        </span>
+        {falta !== null && (
+          <span className="text-[0.7rem] text-ink-faint">Faltam {brl(falta)}</span>
         )}
       </div>
 
-      <div className="font-semibold tabular-nums text-accent-lavender" style={fs(1.1)}>
+      {/* premiação */}
+      <span
+        className={`hidden text-sm tabular-nums lg:block ${
+          bateu ? "font-semibold text-deep-rose" : "text-ink-faint"
+        }`}
+        title={
+          bateu
+            ? `10% sobre o excedente de ${brl(row.excedente)}`
+            : "Liberada apenas ao atingir 100% da meta"
+        }
+      >
+        {brl(row.premiacao)}
+      </span>
+
+      {/* comissão */}
+      <span className="hidden text-sm font-semibold tabular-nums text-deep-lilac lg:block">
         {brl(row.comissaoAcumulada)}
-      </div>
+      </span>
     </div>
   );
 }
