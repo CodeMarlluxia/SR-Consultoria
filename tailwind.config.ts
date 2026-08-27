@@ -67,7 +67,7 @@ const config: Config = {
         mono: ["var(--font-mono)", "ui-monospace", "monospace"],
       },
       borderRadius: {
-        card: "18px",
+        card: "22px",
         pill: "999px",
       },
       boxShadow: {

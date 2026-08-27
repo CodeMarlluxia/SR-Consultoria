@@ -2,6 +2,7 @@
 
 import { useState, useTransition } from "react";
 import { login, signup } from "@/app/actions/auth";
+import { BrandMark } from "@/components/brand-mark";
 
 export function LoginForm({ redirectTo }: { redirectTo: string }) {
   const [mode, setMode] = useState<"login" | "signup">("login");
@@ -18,12 +19,12 @@ export function LoginForm({ redirectTo }: { redirectTo: string }) {
   }
 
   return (
-    <div className="glass w-full max-w-sm rounded-[20px] bg-gradient-to-br from-accent-lavender/20 to-transparent p-8">
+    <div className="glass w-full max-w-sm rounded-[28px] bg-gradient-to-br from-brand-lilac/20 to-transparent p-8">
       <div className="mb-6">
-        <p className="mb-2 text-xs font-semibold uppercase tracking-[0.22em] text-accent-lavender">
-          SR Consultoria <span aria-hidden>💡</span>
-        </p>
-        <h1 className="font-display text-2xl font-bold tracking-tight text-ink">
+        <div className="mb-4">
+          <BrandMark />
+        </div>
+        <h1 className="font-display text-2xl font-bold italic tracking-tight text-ink">
           {mode === "login" ? "Entrar" : "Criar conta"}
         </h1>
         <p className="mt-1 text-sm text-ink-soft">

@@ -167,10 +167,10 @@ export function GoalImporter() {
   return (
     <div className="mx-auto max-w-[880px]">
       <header className="mb-8">
-        <p className="mb-2 text-xs font-semibold uppercase tracking-[0.22em] text-accent-lavender">
-          Gestão de Metas
+        <p className="eyebrow mb-2">
+          <span aria-hidden>🎀 </span>Gestão de Metas
         </p>
-        <h1 className="font-display text-3xl font-bold tracking-tight text-ink">
+        <h1 className="font-display text-3xl font-bold italic tracking-tight text-ink">
           Importador de Metas
         </h1>
         <p className="mt-2 text-ink-soft">

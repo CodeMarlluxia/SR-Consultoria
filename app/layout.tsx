@@ -1,6 +1,6 @@
 import type { Metadata } from "next";
 import { Fraunces, Manrope } from "next/font/google";
-import { NavBar } from "@/components/nav-bar";
+import { AppShell } from "@/components/app-shell";
 import "./globals.css";
 
 // Fraunces: serifa de eixo óptico com terminações macias — dá o tom
@@ -35,8 +35,7 @@ export default function RootLayout({ children }: { children: React.ReactNode }) 
         />
       </head>
       <body className="font-sans antialiased">
-        <NavBar />
-        {children}
+        <AppShell>{children}</AppShell>
       </body>
     </html>
   );

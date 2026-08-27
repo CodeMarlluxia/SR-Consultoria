@@ -43,8 +43,24 @@ export function GoalArc({
   const falta = meta ? Math.max(0, meta - realizado) : null;
   const excedente = meta ? Math.max(0, realizado - meta) : 0;
 
+  const mensagem =
+    meta === null
+      ? "Defina uma meta para acompanhar o progresso."
+      : value >= 100
+        ? "Meta batida! Parabéns ao time. 🎉"
+        : value >= 90
+          ? "Quase lá — faltam só os últimos detalhes."
+          : value >= 50
+            ? "No ritmo certo para fechar o mês bem."
+            : "Início de jornada — vamos acelerar juntas.";
+
   return (
-    <div className="card flex h-full flex-wrap items-center justify-center gap-x-7 gap-y-4 px-5 py-4">
+    <div className="card relative flex h-full flex-wrap items-center justify-center gap-x-7 gap-y-4 overflow-hidden px-5 py-4">
+      <div
+        className="pointer-events-none absolute -right-10 -top-16 h-48 w-48 rounded-full opacity-40 blur-3xl"
+        style={{ background: "radial-gradient(circle, var(--brand-lilac), transparent 70%)" }}
+        aria-hidden
+      />
       <div className="relative flex-shrink-0" style={{ width: SIZE, height: SIZE }}>
         <svg
           viewBox={`0 0 ${SIZE} ${SIZE}`}
@@ -95,38 +111,50 @@ export function GoalArc({
             {Math.round(animated)}
             <span className="text-xl text-ink-soft">%</span>
           </span>
-          <span className="eyebrow mt-1">da meta geral</span>
+          <span className="eyebrow mt-1">performance</span>
         </div>
       </div>
 
-      <div className="min-w-[180px] flex-1">
-        <h3 className="font-display text-lg font-semibold text-ink">Meta da equipe</h3>
-        <p className="mt-0.5 text-xs text-ink-soft">
+      <div className="relative min-w-[220px] flex-1">
+        <h3 className="font-display text-lg font-semibold italic text-ink">
+          <span aria-hidden>✨ </span>Meta do Time
+        </h3>
+        <p className="mt-0.5 text-xs text-ink-soft">{mensagem}</p>
+        <p className="mt-0.5 text-[0.7rem] text-ink-faint">
           {totalPessoas > 0
             ? `${metasBatidas} de ${totalPessoas} ${totalPessoas === 1 ? "bateu" : "bateram"} a meta`
             : "Nenhuma profissional no período"}
         </p>
 
-        <dl className="mt-3 grid grid-cols-2 gap-x-5 gap-y-2.5">
-          <Stat k="Realizado" v={brl(realizado)} tone="text-accent-mint" />
-          <Stat k="Meta" v={meta ? brl(meta) : "—"} />
-          <Stat
+        <div className="mt-3 grid grid-cols-2 gap-2">
+          <StatChip k="Realizado" v={brl(realizado)} tone="mint" />
+          <StatChip k="Meta" v={meta ? brl(meta) : "—"} tone="serenity" />
+          <StatChip
             k={excedente > 0 ? "Excedente" : "Faltam"}
             v={excedente > 0 ? brl(excedente) : falta !== null ? brl(falta) : "—"}
-            tone={excedente > 0 ? "text-accent-lavender" : undefined}
+            tone={excedente > 0 ? "lavender" : "rose"}
           />
-          <Stat k="Premiação" v={brl(premiacao)} tone="text-accent-rose" />
-        </dl>
+          <StatChip k="Premiação" v={brl(premiacao)} tone="gold" />
+        </div>
       </div>
     </div>
   );
 }
 
-function Stat({ k, v, tone }: { k: string; v: string; tone?: string }) {
+const CHIP_TONE: Record<string, { bg: string; text: string }> = {
+  mint:      { bg: "bg-brand-mint/22",   text: "text-accent-mint" },
+  serenity:  { bg: "bg-brand-sky/22",    text: "text-accent-serenity" },
+  lavender:  { bg: "bg-brand-lilac/22",  text: "text-accent-lavender" },
+  rose:      { bg: "bg-brand-rose/22",   text: "text-accent-rose" },
+  gold:      { bg: "bg-brand-butter/28", text: "text-accent-gold" },
+};
+
+function StatChip({ k, v, tone }: { k: string; v: string; tone: keyof typeof CHIP_TONE }) {
+  const t = CHIP_TONE[tone];
   return (
-    <div className="min-w-0">
-      <dt className="eyebrow truncate">{k}</dt>
-      <dd className={`mt-0.5 truncate text-base font-semibold tabular-nums ${tone ?? "text-ink"}`}>{v}</dd>
+    <div className={`min-w-0 rounded-2xl px-3 py-2 ${t.bg}`}>
+      <p className="eyebrow truncate">{k}</p>
+      <p className={`mt-0.5 truncate text-sm font-semibold tabular-nums ${t.text}`}>{v}</p>
     </div>
   );
 }

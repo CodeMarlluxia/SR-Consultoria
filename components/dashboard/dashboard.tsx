@@ -49,9 +49,11 @@ export function Dashboard({ payload }: { payload: DashboardPayload }) {
       {/* ---- Cabeçalho ------------------------------------------------ */}
       <div className="flex flex-shrink-0 items-center justify-between gap-4">
         <div className="min-w-0">
-          <p className="eyebrow">Ranking do período</p>
-          <h1 className="truncate font-display text-2xl font-semibold tracking-tight text-ink xl:text-3xl">
-            SR Consultoria
+          <p className="eyebrow">
+            <span aria-hidden>✨ </span>Bem-vinda de volta
+          </p>
+          <h1 className="truncate font-display text-2xl font-semibold italic tracking-tight text-ink xl:text-3xl">
+            {from && to ? `Ranking de ${shortDate(from)} a ${shortDate(to)}` : "Ranking do período"}
           </h1>
         </div>
         <div className="flex flex-shrink-0 items-center gap-2.5">
@@ -80,13 +82,14 @@ export function Dashboard({ payload }: { payload: DashboardPayload }) {
         <div className="flex min-h-0 flex-1 flex-col gap-3 pt-3">
           {/* ---- KPIs + destaques ---------------------------------- */}
           <div className="grid flex-shrink-0 grid-cols-2 gap-3 lg:grid-cols-5">
-            <MetricCard label="Faturamento total" value={data.totalFaturamento} sub="no período" tone="mint" />
-            <MetricCard label="Comissão a pagar" value={data.totalComissao} sub="acumulada" tone="lavender" />
+            <MetricCard label="Faturamento total" value={data.totalFaturamento} sub="no período" tone="mint" icon="🌷" />
+            <MetricCard label="Comissão a pagar" value={data.totalComissao} sub="acumulada" tone="lavender" icon="🎀" />
             <MetricCard
               label="Premiação a pagar"
               value={data.totalPremiacao}
               sub={`10% do excedente · ${data.metasBatidas} meta${data.metasBatidas === 1 ? "" : "s"} batida${data.metasBatidas === 1 ? "" : "s"}`}
               tone="rose"
+              icon="👑"
             />
             {data.topPorMeta ? (
               <ChampionCard
