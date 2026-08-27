@@ -16,7 +16,7 @@ function initials(name: string): string {
 
 interface GoalsTableProps {
   professionals: ProfessionalAggregate[];
-  goals: Record<string, string>; // nome -> valor do input
+  goals: Record<string, string>; // name -> input value
   onGoalChange: (name: string, value: string) => void;
 }
 
@@ -26,39 +26,36 @@ export function GoalsTable({ professionals, goals, onGoalChange }: GoalsTablePro
       {professionals.map((p, i) => (
         <div
           key={p.profissional}
-          className="card flex animate-fade-rise items-center gap-4 px-4 py-3.5 opacity-0"
-          style={{ animationDelay: `${i * 0.06}s` }}
+          className="flex items-center gap-4 rounded-2xl border border-white/60 bg-white/45 px-4 py-3.5 opacity-0 animate-fade-rise"
+          style={{ animationDelay: `${i * 0.08}s` }}
         >
-          <span
-            className="flex h-11 w-11 flex-shrink-0 items-center justify-center rounded-full bg-gradient-to-br from-brand-sky to-brand-mint font-display text-sm font-semibold text-ink"
-            aria-hidden
+          <div
+            className="flex h-11 w-11 flex-shrink-0 items-center justify-center rounded-full text-base font-bold text-white shadow-glass"
+            style={{ background: "linear-gradient(135deg,#a8d8f0,#b8e8c8)" }}
           >
             {initials(p.profissional)}
-          </span>
+          </div>
 
           <div className="min-w-0 flex-1">
-            <p className="truncate font-semibold text-ink">{p.profissional}</p>
-            <p className="mt-0.5 text-xs text-ink-soft">
+            <div className="truncate font-semibold text-ink">{p.profissional}</div>
+            <div className="mt-0.5 text-xs text-ink-soft">
               {p.qtdLinhas} atendimentos · {brl(p.faturamento)} no período
-            </p>
+            </div>
           </div>
 
           <div className="relative">
-            <span
-              className="pointer-events-none absolute left-3.5 top-1/2 -translate-y-1/2 text-sm font-semibold text-ink-faint"
-              aria-hidden
-            >
+            <span className="pointer-events-none absolute left-3 top-1/2 -translate-y-1/2 text-sm text-ink-soft">
               R$
             </span>
             <input
               type="number"
               min={0}
-              step="0.01"
+              step={100}
               placeholder="0,00"
               aria-label={`Meta para ${p.profissional}`}
               value={goals[p.profissional] ?? ""}
               onChange={(e) => onGoalChange(p.profissional, e.target.value)}
-              className="field w-[160px] py-2.5 pl-9 pr-3 text-base font-semibold tabular-nums [appearance:textfield] [&::-webkit-inner-spin-button]:appearance-none [&::-webkit-outer-spin-button]:appearance-none"
+              className="w-[150px] rounded-[10px] border-[1.5px] border-white/60 bg-white/60 dark:border-white/15 dark:bg-white/5 py-2.5 pl-8 pr-3 text-base font-semibold tabular-nums text-ink outline-none transition-all focus:border-pastel-serenity focus:shadow-[0_0_0_3px_rgba(212,184,240,0.25)] [appearance:textfield] [&::-webkit-inner-spin-button]:appearance-none [&::-webkit-outer-spin-button]:appearance-none"
             />
           </div>
         </div>

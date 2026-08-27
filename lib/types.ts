@@ -13,6 +13,14 @@ export interface Meta {
   profissional_id: string;
   mes_ano: string; // 'YYYY-MM'
   valor_meta: number;
+  /** When true, this goal auto-reloads on future imports of the same month. */
+  persistir_meta_mes: boolean;
+}
+
+/** A persisted goal preloaded into the importer, keyed by normalized name. */
+export interface PersistedGoal {
+  profissional: string; // UPPERCASE, trimmed
+  valorMeta: number;
 }
 
 export interface VendaImportada {
@@ -39,7 +47,7 @@ export interface ParsedSaleRow {
   hashTransacao: string;
 }
 
-/** Linha agregada de desempenho exibida na tabela do dashboard. */
+/** Aggregated performance row for the dashboard table. */
 export interface PerformanceRow {
   profissionalId: string;
   nome: string;
@@ -48,10 +56,4 @@ export interface PerformanceRow {
   comissaoAcumulada: number;
   meta: number | null;
   progressoPct: number | null;
-  /** Valor acima da meta (0 quando não atingiu). */
-  excedente: number;
-  /** 10% do excedente — só existe a partir de 100% da meta. */
-  premiacao: number;
-  /** Posição no ranking oficial (0 = troféu), definida pelo % da meta. */
-  posicao: number;
 }

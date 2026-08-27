@@ -35,12 +35,12 @@ export function DropZone({ scanning, onFile }: DropZoneProps) {
       onDragLeave={(e) => { e.preventDefault(); setDragOver(false); }}
       onDrop={handleDrop}
       className={[
-        "relative cursor-pointer overflow-hidden rounded-card border-2 border-dashed",
+        "relative cursor-pointer overflow-hidden rounded-[18px] border-2 border-dashed",
         "bg-white/40 px-8 py-14 text-center transition-all duration-300",
         "focus:outline-none focus-visible:ring-2 focus-visible:ring-pastel-lavender",
         dragOver
-          ? "scale-[1.005] border-brand-rose bg-white/70 shadow-lift"
-          : "border-brand-lilac/60",
+          ? "border-pastel-serenity scale-[1.01] shadow-glass-lg bg-white/60"
+          : "border-pastel-serenity/50 ",
       ].join(" ")}
     >
       <input
@@ -57,16 +57,16 @@ export function DropZone({ scanning, onFile }: DropZoneProps) {
 
       <ScannerOverlay active={scanning} />
 
-      <div className="mx-auto mb-5 flex h-16 w-16 items-center justify-center rounded-full bg-gradient-to-br from-brand-rose/40 to-brand-lilac/40 text-ink">
+      <div className="mx-auto mb-5 flex h-16 w-16 items-center justify-center rounded-full border border-pastel-serenity/50 bg-pastel-serenity/20 text-accent-lavender shadow-glass">
         <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth={2} strokeLinecap="round" strokeLinejoin="round" className="h-8 w-8">
           <path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4" />
           <polyline points="17 8 12 3 7 8" />
           <line x1="12" y1="3" x2="12" y2="15" />
         </svg>
       </div>
-      <p className="font-display text-xl font-semibold text-ink">Solte o arquivo .csv aqui</p>
+      <p className="text-lg font-bold text-ink">Solte o arquivo .csv aqui</p>
       <p className="mt-1 text-sm text-ink-soft">
-        ou <span className="font-semibold text-deep-lilac">clique para selecionar</span> · relatório do período
+        ou <span className="font-semibold text-accent-lavender">clique para selecionar</span> · relatório do período
       </p>
     </div>
   );

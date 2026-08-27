@@ -1,10 +1,6 @@
 export const brl = (n: number) =>
   n.toLocaleString("pt-BR", { style: "currency", currency: "BRL" });
 
-/** 87.4 → '87,4%' */
-export const pct = (n: number | null) =>
-  n === null ? "—" : `${n.toLocaleString("pt-BR", { maximumFractionDigits: 1 })}%`;
-
 export function initials(name: string): string {
   return name
     .split(/\s+/)
@@ -14,61 +10,16 @@ export function initials(name: string): string {
     .toUpperCase();
 }
 
-export type BandKey = "batida" | "quase" | "ritmo" | "inicio" | "sem-meta";
-
-/** Faixa de progresso → rótulo + cor da barra. */
-export function progressBand(pctValue: number | null): {
-  key: BandKey;
+/** Progress-band → fill key + trend label. */
+export function progressBand(pct: number | null): {
+  fill: string;
   label: string;
-  bar: string;
-  text: string;
 } {
-  if (pctValue === null) {
-    return {
-      key: "sem-meta",
-      label: "sem meta",
-      bar: "var(--ink-faint)",
-      text: "text-ink-faint",
-    };
-  }
-  if (pctValue >= 100) {
-    return {
-      key: "batida",
-      label: "meta batida",
-      bar: "linear-gradient(90deg, var(--mint), var(--butter))",
-      text: "text-deep-mint",
-    };
-  }
-  if (pctValue >= 90) {
-    return {
-      key: "quase",
-      label: "quase lá",
-      bar: "linear-gradient(90deg, var(--rose), var(--butter))",
-      text: "text-deep-rose",
-    };
-  }
-  if (pctValue >= 50) {
-    return {
-      key: "ritmo",
-      label: "no ritmo",
-      bar: "linear-gradient(90deg, var(--lilac), var(--rose))",
-      text: "text-deep-lilac",
-    };
-  }
-  return {
-    key: "inicio",
-    label: "começando",
-    bar: "linear-gradient(90deg, var(--sky), var(--lilac))",
-    text: "text-deep-sky",
-  };
-}
-
-/** Selo da posição no ranking. Pódio recebe símbolo; o resto, número. */
-export function rankBadge(posicao: number): string {
-  if (posicao === 0) return "🏆";
-  if (posicao === 1) return "🥈";
-  if (posicao === 2) return "🥉";
-  return String(posicao + 1);
+  if (pct === null) return { fill: "fill-none", label: "sem meta" };
+  if (pct >= 100) return { fill: "fill-mint", label: "✨ meta batida" };
+  if (pct >= 90) return { fill: "fill-rose", label: "🔥 quase lá" };
+  if (pct >= 50) return { fill: "fill-mint", label: "📈 no ritmo" };
+  return { fill: "fill-serenity", label: "⚠️ começando" };
 }
 
 const MESES = [
