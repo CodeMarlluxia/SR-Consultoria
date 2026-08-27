@@ -2,6 +2,7 @@
 
 import { useRouter } from "next/navigation";
 import { useEffect, useState, useTransition } from "react";
+import { IconX } from "@/components/icons";
 
 // ---------------------------------------------------------------------
 //  'YYYY-MM-DD' <-> 'DD/MM/AAAA'. Um <input type="date"> nativo formata o
@@ -133,10 +134,10 @@ export function DateRangePicker({
         <button
           onClick={() => apply(min, max)}
           disabled={pending}
-          className="rounded-md px-1.5 py-0.5 text-xs font-medium text-ink-soft transition-colors hover:text-ink disabled:opacity-60"
+          className="rounded-md p-1 text-ink-soft transition-colors hover:text-ink disabled:opacity-60"
           aria-label="Ver todo o período disponível"
         >
-          ✕
+          <IconX className="h-3 w-3" />
         </button>
       )}
     </div>

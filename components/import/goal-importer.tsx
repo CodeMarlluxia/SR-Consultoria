@@ -14,6 +14,7 @@ import {
 } from "@/lib/csv/importer";
 import { saveImport, getPersistedGoals } from "@/app/actions/import";
 import type { ParsedSaleRow } from "@/lib/types";
+import { IconTarget, IconCheckCircle } from "@/components/icons";
 
 const SCAN_MS = 1600; // let the laser animation play before revealing
 
@@ -143,8 +144,8 @@ export function GoalImporter() {
         setToast({
           tone: "success",
           message: persistir
-            ? "Metas salvas e mantidas para o mês ✓"
-            : "Metas salvas ✓",
+            ? "Metas salvas e mantidas para o mês"
+            : "Metas salvas",
         });
       }
       setTimeout(() => setSaved(false), 2500);
@@ -167,8 +168,9 @@ export function GoalImporter() {
   return (
     <div className="mx-auto max-w-[880px]">
       <header className="mb-8">
-        <p className="eyebrow mb-2">
-          <span aria-hidden>🎀 </span>Gestão de Metas
+        <p className="eyebrow mb-2 inline-flex items-center gap-1.5">
+          <IconTarget className="h-3 w-3" aria-hidden />
+          Gestão de Metas
         </p>
         <h1 className="font-display text-3xl font-bold italic tracking-tight text-ink">
           Importador de Metas
@@ -223,7 +225,10 @@ export function GoalImporter() {
               Importar outro arquivo
             </button>
             {saved && (
-              <span className="text-sm font-semibold text-accent-mint">Metas salvas ✓</span>
+              <span className="inline-flex items-center gap-1.5 text-sm font-semibold text-accent-mint">
+                <IconCheckCircle className="h-4 w-4" aria-hidden />
+                Metas salvas
+              </span>
             )}
           </div>
         </section>

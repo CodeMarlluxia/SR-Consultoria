@@ -2,6 +2,7 @@
 
 import { brl } from "./format";
 import { useCountUp } from "./use-count-up";
+import { IconSparkle } from "@/components/icons";
 
 // ---------------------------------------------------------------------
 //  Elemento assinatura: o Anel da Meta.
@@ -47,7 +48,7 @@ export function GoalArc({
     meta === null
       ? "Defina uma meta para acompanhar o progresso."
       : value >= 100
-        ? "Meta batida! Parabéns ao time. 🎉"
+        ? "Meta batida! Parabéns ao time."
         : value >= 90
           ? "Quase lá — faltam só os últimos detalhes."
           : value >= 50
@@ -116,8 +117,9 @@ export function GoalArc({
       </div>
 
       <div className="relative min-w-[220px] flex-1">
-        <h3 className="font-display text-lg font-semibold italic text-ink">
-          <span aria-hidden>✨ </span>Meta do Time
+        <h3 className="flex items-center gap-1.5 font-display text-lg font-semibold italic text-ink">
+          <IconSparkle className="h-4 w-4 flex-shrink-0 not-italic text-accent-lavender" aria-hidden />
+          Meta do Time
         </h3>
         <p className="mt-0.5 text-xs text-ink-soft">{mensagem}</p>
         <p className="mt-0.5 text-[0.7rem] text-ink-faint">

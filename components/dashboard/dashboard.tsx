@@ -9,6 +9,7 @@ import { PerformanceTable } from "./performance-table";
 import { DateRangePicker, FullscreenButton } from "./controls";
 import { ThemeToggle } from "@/components/theme-toggle";
 import { brl, pct, shortDate } from "./format";
+import { IconSparkle, IconWallet, IconCoins, IconAward, IconTrophy, IconUsers, IconScissors, IconTag } from "@/components/icons";
 
 export function Dashboard({ payload }: { payload: DashboardPayload }) {
   const { from, to, boundsMin, boundsMax, sales, metas, diasNoMes, diasDecorridos } = payload;
@@ -49,8 +50,9 @@ export function Dashboard({ payload }: { payload: DashboardPayload }) {
       {/* ---- Cabeçalho ------------------------------------------------ */}
       <div className="flex flex-shrink-0 items-center justify-between gap-4">
         <div className="min-w-0">
-          <p className="eyebrow">
-            <span aria-hidden>✨ </span>Bem-vinda de volta
+          <p className="eyebrow inline-flex items-center gap-1.5">
+            <IconSparkle className="h-3 w-3" aria-hidden />
+            Bem-vinda de volta
           </p>
           <h1 className="truncate font-display text-2xl font-semibold italic tracking-tight text-ink xl:text-3xl">
             {from && to ? `Ranking de ${shortDate(from)} a ${shortDate(to)}` : "Ranking do período"}
@@ -82,20 +84,20 @@ export function Dashboard({ payload }: { payload: DashboardPayload }) {
         <div className="flex min-h-0 flex-1 flex-col gap-3 pt-3">
           {/* ---- KPIs + destaques ---------------------------------- */}
           <div className="grid flex-shrink-0 grid-cols-2 gap-3 lg:grid-cols-5">
-            <MetricCard label="Faturamento total" value={data.totalFaturamento} sub="no período" tone="mint" icon="🌷" />
-            <MetricCard label="Comissão a pagar" value={data.totalComissao} sub="acumulada" tone="lavender" icon="🎀" />
+            <MetricCard label="Faturamento total" value={data.totalFaturamento} sub="no período" tone="mint" icon={<IconWallet className="h-4 w-4" />} />
+            <MetricCard label="Comissão a pagar" value={data.totalComissao} sub="acumulada" tone="lavender" icon={<IconCoins className="h-4 w-4" />} />
             <MetricCard
               label="Premiação a pagar"
               value={data.totalPremiacao}
               sub={`10% do excedente · ${data.metasBatidas} meta${data.metasBatidas === 1 ? "" : "s"} batida${data.metasBatidas === 1 ? "" : "s"}`}
               tone="rose"
-              icon="👑"
+              icon={<IconAward className="h-4 w-4" />}
             />
             {data.topPorMeta ? (
               <ChampionCard
                 highlight
                 tone="rose"
-                icon="🏆"
+                icon={<IconTrophy className="h-4 w-4" />}
                 label="Líder da meta"
                 nome={data.topPorMeta.nome}
                 stat={`${pct(data.topPorMeta.progressoPct)} da meta`}
@@ -113,7 +115,7 @@ export function Dashboard({ payload }: { payload: DashboardPayload }) {
             {data.topPorVolume && (
               <ChampionCard
                 tone="serenity"
-                icon="✦"
+                icon={<IconUsers className="h-4 w-4" />}
                 label="Mais atendimentos"
                 nome={data.topPorVolume.nome}
                 stat={`${data.topPorVolume.qtdLinhas} atendimentos`}
@@ -130,7 +132,7 @@ export function Dashboard({ payload }: { payload: DashboardPayload }) {
                 title={data.servicoMaisExecutado.nome}
                 detail={`${data.servicoMaisExecutado.ocorrencias} vezes`}
                 tone="lavender"
-                icon="✂"
+                icon={<IconScissors className="h-4 w-4" />}
               />
             ) : (
               <div className="hidden lg:block" />
@@ -151,7 +153,7 @@ export function Dashboard({ payload }: { payload: DashboardPayload }) {
                 title={data.categoriaMaisVendida.nome}
                 detail={brl(data.categoriaMaisVendida.receita)}
                 tone="gold"
-                icon="🌸"
+                icon={<IconTag className="h-4 w-4" />}
               />
             ) : (
               <div className="hidden lg:block" />

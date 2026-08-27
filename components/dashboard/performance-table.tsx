@@ -2,7 +2,8 @@
 
 import { useEffect, useRef, useState } from "react";
 import type { ProfPerformance } from "@/lib/dashboard/compute";
-import { brl, initials, pct, progressBand, rankBadge } from "./format";
+import { brl, initials, pct, progressBand } from "./format";
+import { IconTrophy } from "@/components/icons";
 
 // ---------------------------------------------------------------------
 //  Ranking. A ordem e o troféu vêm SEMPRE do percentual de atingimento da
@@ -157,7 +158,11 @@ function PerfRow({
         style={fs(1.25)}
         title={`${row.posicao + 1}ª por atingimento da meta`}
       >
-        {rankBadge(row.posicao)}
+        {row.posicao === 0 ? (
+          <IconTrophy className="mx-auto h-[1em] w-[1em] text-accent-rose" aria-hidden />
+        ) : (
+          row.posicao + 1
+        )}
       </div>
 
       <div className="flex min-w-0 items-center gap-2.5">

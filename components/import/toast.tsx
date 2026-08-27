@@ -1,6 +1,7 @@
 "use client";
 
 import { useEffect } from "react";
+import { IconX } from "@/components/icons";
 
 export type ToastTone = "success" | "info" | "error";
 
@@ -51,9 +52,9 @@ export function Toast({
           type="button"
           onClick={onDismiss}
           aria-label="Fechar aviso"
-          className="ml-auto flex-shrink-0 rounded-md px-1.5 text-base leading-none opacity-70 transition-opacity hover:opacity-100"
+          className="ml-auto flex-shrink-0 rounded-md p-1 opacity-70 transition-opacity hover:opacity-100"
         >
-          ✕
+          <IconX className="h-3.5 w-3.5" />
         </button>
       </div>
     </div>

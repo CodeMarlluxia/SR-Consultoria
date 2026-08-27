@@ -62,14 +62,6 @@ export function progressBand(pctValue: number | null): {
   };
 }
 
-/** Selo da posição. Pódio recebe símbolo; o resto, número. */
-export function rankBadge(posicao: number): string {
-  if (posicao === 0) return "🏆";
-  if (posicao === 1) return "🥈";
-  if (posicao === 2) return "🥉";
-  return String(posicao + 1);
-}
-
 const MESES = [
   "Janeiro", "Fevereiro", "Março", "Abril", "Maio", "Junho",
   "Julho", "Agosto", "Setembro", "Outubro", "Novembro", "Dezembro",
