@@ -2,7 +2,8 @@
 
 import { useEffect, useRef, useState } from "react";
 import type { ProfPerformance } from "@/lib/dashboard/compute";
-import { brl, initials, pct, progressBand } from "./format";
+import { LogoMark } from "@/components/brand-mark";
+import { brl, pct, progressBand } from "./format";
 import { IconTrophy } from "@/components/icons";
 
 // ---------------------------------------------------------------------
@@ -63,7 +64,7 @@ export function PerformanceTable({
           className="font-display font-semibold text-ink"
           style={{ fontSize: fitToHeight ? `${1.3 * scale}rem` : "1.3rem" }}
         >
-          Ranking por atingimento da meta
+          Ranking de atendimento
         </h3>
       </div>
 
@@ -166,15 +167,9 @@ function PerfRow({
       </div>
 
       <div className="flex min-w-0 items-center gap-2.5">
-        <div
-          className="flex flex-shrink-0 items-center justify-center rounded-full bg-gradient-to-br from-brand-sky to-brand-mint font-semibold text-onPastel"
-          style={{ width: avatarPx, height: avatarPx, fontSize: `${0.78 * scale}rem` }}
-          aria-hidden
-        >
-          {initials(row.nome)}
-        </div>
+        <LogoMark style={{ width: avatarPx, height: avatarPx }} />
         <div className="min-w-0">
-          <div className="truncate font-semibold text-ink" style={fs(1.1)}>
+          <div className="truncate font-semibold text-ink" style={fs(0.98)}>
             {row.nome}
           </div>
           <div className="truncate text-ink-faint" style={fs(0.82)}>

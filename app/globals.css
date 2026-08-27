@@ -143,32 +143,16 @@ body {
    Camada de componentes — "Atelier Pastel"
    --------------------------------------------------------------------- */
 
-/* Superfície padrão dos cards: o vidro do tema + raio unificado. */
+/* Superfície padrão dos cards: o vidro do tema + raio unificado. O
+   contorno é a única marcação do card — sem barra decorativa no topo. */
 .card {
   background-color: var(--glass-bg);
   backdrop-filter: blur(18px);
   -webkit-backdrop-filter: blur(18px);
-  border: 1px solid var(--glass-border);
+  border: 1px solid color-mix(in srgb, var(--ink-faint) 28%, transparent);
   border-radius: 22px;
   box-shadow: var(--glass-shadow);
   transition: background-color 0.4s ease, border-color 0.4s ease, box-shadow 0.4s ease;
-}
-
-/* Fio de cor no topo do card. Não é enfeite: identifica a natureza do
-   indicador e é a única cor saturada da peça. */
-.card-thread {
-  position: relative;
-}
-.card-thread::before {
-  content: "";
-  position: absolute;
-  top: 0;
-  left: 0;
-  width: 100%;
-  height: 3px;
-  border-radius: 22px 22px 0 0;
-  background: var(--thread, var(--brand-rose));
-  opacity: 0.95;
 }
 
 /* Rótulo superior padronizado (versalete). */

@@ -1,17 +1,28 @@
 "use client";
 
+import type { CSSProperties } from "react";
 import { useEffect, useState } from "react";
 import { IconSparkle } from "@/components/icons";
 
+const LOGO_SRC = "/logo.jpg";
+
 /**
  * Selo circular da marca. Mostra o ícone vetorial até confirmar — via uma
- * sondagem client-side com `new Image()` — que `public/logo.png` existe e
+ * sondagem client-side com `new Image()` — que o arquivo do logo existe e
  * carrega; só então troca para o arquivo real. Checar depois de montado
  * (em vez de um <img onError>) evita a corrida de hidratação: o erro do
  * <img> renderizado no HTML do servidor dispara antes do React religar o
  * handler, então onError nunca chegaria a rodar.
  */
-export function LogoMark({ size = "sm" }: { size?: "sm" | "lg" }) {
+export function LogoMark({
+  size = "sm",
+  className,
+  style,
+}: {
+  size?: "sm" | "lg";
+  className?: string;
+  style?: CSSProperties;
+}) {
   const [loaded, setLoaded] = useState(false);
   const lg = size === "lg";
 
@@ -20,7 +31,7 @@ export function LogoMark({ size = "sm" }: { size?: "sm" | "lg" }) {
     const probe = new Image();
     probe.onload = () => !cancelled && setLoaded(true);
     probe.onerror = () => !cancelled && setLoaded(false);
-    probe.src = "/logo.png";
+    probe.src = LOGO_SRC;
     return () => {
       cancelled = true;
     };
@@ -28,13 +39,15 @@ export function LogoMark({ size = "sm" }: { size?: "sm" | "lg" }) {
 
   return (
     <span
-      className={`flex flex-shrink-0 items-center justify-center overflow-hidden rounded-full text-onPastel ${lg ? "h-12 w-12" : "h-9 w-9"}`}
-      style={{ background: "linear-gradient(135deg, var(--brand-rose), var(--brand-lilac))" }}
+      className={`flex flex-shrink-0 items-center justify-center overflow-hidden rounded-full text-onPastel ${
+        className ?? (lg ? "h-12 w-12" : "h-9 w-9")
+      }`}
+      style={{ background: "linear-gradient(135deg, var(--brand-rose), var(--brand-lilac))", ...style }}
       aria-hidden
     >
       {loaded ? (
         // eslint-disable-next-line @next/next/no-img-element
-        <img src="/logo.png" alt="" className="h-full w-full object-cover" />
+        <img src={LOGO_SRC} alt="" className="h-full w-full object-cover" />
       ) : (
         <IconSparkle className={lg ? "h-5 w-5" : "h-4 w-4"} />
       )}

@@ -1,28 +1,23 @@
 "use client";
 
-import type { CSSProperties, ReactNode } from "react";
-import { initials } from "./format";
+import { LogoMark } from "@/components/brand-mark";
 import { useCountUp } from "./use-count-up";
 
 // ---------------------------------------------------------------------
-//  Cada card carrega um fio de cor no topo (--thread) e um véu suave da
-//  mesma cor no fundo (--tint). O fio identifica a natureza do indicador;
-//  o véu dá o tom colorido e delicado ao conjunto sem pesar a leitura. Os
-//  pastéis vêm de --brand-* (superfície, constante nos temas); os números
-//  usam text-accent-*, que clareia no modo escuro.
+//  Cada card recebe um véu suave da cor do tom (--tint) no fundo, que dá o
+//  tom colorido e delicado ao conjunto sem pesar a leitura. Os pastéis vêm
+//  de --brand-* (superfície, constante nos temas); os números usam
+//  text-accent-*, que clareia no modo escuro.
 // ---------------------------------------------------------------------
 export type Tone = "rose" | "gold" | "mint" | "serenity" | "lavender";
 
-const TONE: Record<Tone, { thread: string; value: string; chip: string; ring: string; tint: string }> = {
-  rose:      { thread: "var(--brand-rose)",   value: "text-accent-rose",     chip: "bg-brand-rose/30",   ring: "from-brand-rose to-brand-lilac",  tint: "from-brand-rose/20" },
-  gold:      { thread: "var(--brand-butter)", value: "text-accent-gold",     chip: "bg-brand-butter/35", ring: "from-brand-butter to-brand-mint", tint: "from-brand-butter/22" },
-  mint:      { thread: "var(--brand-mint)",   value: "text-accent-mint",     chip: "bg-brand-mint/35",   ring: "from-brand-mint to-brand-sky",    tint: "from-brand-mint/20" },
-  serenity:  { thread: "var(--brand-sky)",    value: "text-accent-serenity", chip: "bg-brand-sky/35",    ring: "from-brand-sky to-brand-lilac",   tint: "from-brand-sky/20" },
-  lavender:  { thread: "var(--brand-lilac)",  value: "text-accent-lavender", chip: "bg-brand-lilac/30",  ring: "from-brand-lilac to-brand-rose",  tint: "from-brand-lilac/18" },
+const TONE: Record<Tone, { value: string; chip: string; tint: string }> = {
+  rose:      { value: "text-accent-rose",     chip: "bg-brand-rose/30",   tint: "from-brand-rose/20" },
+  gold:      { value: "text-accent-gold",     chip: "bg-brand-butter/35", tint: "from-brand-butter/22" },
+  mint:      { value: "text-accent-mint",     chip: "bg-brand-mint/35",   tint: "from-brand-mint/20" },
+  serenity:  { value: "text-accent-serenity", chip: "bg-brand-sky/35",    tint: "from-brand-sky/20" },
+  lavender:  { value: "text-accent-lavender", chip: "bg-brand-lilac/30",  tint: "from-brand-lilac/18" },
 };
-
-const threadStyle = (tone: Tone): CSSProperties =>
-  ({ "--thread": TONE[tone].thread } as CSSProperties);
 
 /** KPI numérico com contagem animada. */
 export function MetricCard({
@@ -30,14 +25,12 @@ export function MetricCard({
   value,
   sub,
   tone = "mint",
-  icon,
   isCurrency = true,
 }: {
   label: string;
   value: number;
   sub?: string;
   tone?: Tone;
-  icon?: ReactNode;
   isCurrency?: boolean;
 }) {
   const animated = useCountUp(value);
@@ -46,20 +39,10 @@ export function MetricCard({
     n.toLocaleString("pt-BR", { style: "currency", currency: "BRL" });
 
   return (
-    <div
-      className={`card card-thread overflow-hidden bg-gradient-to-br ${t.tint} to-transparent px-4 pb-3.5 pt-4`}
-      style={threadStyle(tone)}
-    >
+    <div className={`card overflow-hidden bg-gradient-to-br ${t.tint} to-transparent px-4 pb-3.5 pt-4`}>
       <div className="flex items-start justify-between gap-2">
         <p className="eyebrow truncate">{label}</p>
-        {icon && (
-          <span
-            className={`flex h-8 w-8 flex-shrink-0 items-center justify-center rounded-full ${t.chip} ${t.value}`}
-            aria-hidden
-          >
-            {icon}
-          </span>
-        )}
+        <LogoMark className="h-8 w-8" />
       </div>
       <p
         className={`mt-2 truncate font-display text-2xl font-semibold leading-none tabular-nums tracking-tight ${t.value}`}
@@ -74,7 +57,6 @@ export function MetricCard({
 /** Card de destaque com avatar da profissional. */
 export function ChampionCard({
   tone,
-  icon,
   label,
   nome,
   stat,
@@ -82,7 +64,6 @@ export function ChampionCard({
   highlight = false,
 }: {
   tone: Tone;
-  icon: ReactNode;
   label: string;
   nome: string;
   stat: string;
@@ -94,32 +75,21 @@ export function ChampionCard({
   return (
     <div
       className={[
-        "card card-thread overflow-hidden bg-gradient-to-br px-4 pb-3.5 pt-4",
+        "card overflow-hidden bg-gradient-to-br px-4 pb-3.5 pt-4",
         t.tint,
         "to-transparent",
         highlight ? "ring-1 ring-brand-rose/60" : "",
       ].join(" ")}
-      style={threadStyle(tone)}
     >
       <div className="flex items-start justify-between gap-2">
-        <span
-          className={`flex h-8 w-8 flex-shrink-0 items-center justify-center rounded-full ${t.chip} ${t.value}`}
-          aria-hidden
-        >
-          {icon}
-        </span>
+        <LogoMark className="h-8 w-8" />
         <span className={`truncate rounded-full px-2 py-0.5 text-[0.6rem] font-bold uppercase tracking-[0.12em] ${t.chip} ${t.value}`}>
           {label}
         </span>
       </div>
 
       <div className="mt-3 flex items-center gap-2.5">
-        <span
-          className={`flex h-9 w-9 flex-shrink-0 items-center justify-center rounded-full bg-gradient-to-br ${t.ring} font-display text-xs font-semibold text-onPastel`}
-          aria-hidden
-        >
-          {initials(nome)}
-        </span>
+        <LogoMark className="h-9 w-9" />
         <div className="min-w-0">
           <p className="truncate font-display text-base font-semibold leading-tight text-ink" title={nome}>
             {nome}
@@ -139,29 +109,19 @@ export function InsightCard({
   title,
   detail,
   tone = "serenity",
-  icon,
 }: {
   label: string;
   title: string;
   detail: string;
   tone?: Tone;
-  icon: ReactNode;
 }) {
   const t = TONE[tone];
 
   return (
-    <div
-      className={`card card-thread flex flex-col justify-center overflow-hidden bg-gradient-to-br ${t.tint} to-transparent px-4 pb-4 pt-4`}
-      style={threadStyle(tone)}
-    >
+    <div className={`card flex flex-col justify-center overflow-hidden bg-gradient-to-br ${t.tint} to-transparent px-4 pb-4 pt-4`}>
       <div className="flex items-start justify-between gap-2">
         <p className="eyebrow truncate">{label}</p>
-        <span
-          className={`flex h-8 w-8 flex-shrink-0 items-center justify-center rounded-full ${t.chip} ${t.value}`}
-          aria-hidden
-        >
-          {icon}
-        </span>
+        <LogoMark className="h-8 w-8" />
       </div>
       <p className="mt-2 truncate font-display text-xl font-semibold italic text-ink" title={title}>
         {title}

@@ -56,13 +56,27 @@ export function GoalArc({
             : "Início de jornada — vamos acelerar juntas.";
 
   return (
-    <div className="card relative flex h-full flex-wrap items-center justify-center gap-x-7 gap-y-4 overflow-hidden px-5 py-4">
+    <div className="card relative flex h-full flex-col items-center justify-center gap-3 overflow-hidden px-5 py-4">
       <div
         className="pointer-events-none absolute -right-10 -top-16 h-48 w-48 rounded-full opacity-40 blur-3xl"
         style={{ background: "radial-gradient(circle, var(--brand-lilac), transparent 70%)" }}
         aria-hidden
       />
-      <div className="relative flex-shrink-0" style={{ width: SIZE, height: SIZE }}>
+
+      <div className="relative w-full text-center">
+        <h3 className="flex items-center justify-center gap-1.5 font-display text-lg font-semibold italic text-ink">
+          <IconSparkle className="h-4 w-4 flex-shrink-0 not-italic text-accent-lavender" aria-hidden />
+          Meta do Time
+        </h3>
+        <p className="mt-0.5 text-xs text-ink-soft">{mensagem}</p>
+        <p className="mt-0.5 text-[0.7rem] text-ink-faint">
+          {totalPessoas > 0
+            ? `${metasBatidas} de ${totalPessoas} ${totalPessoas === 1 ? "bateu" : "bateram"} a meta`
+            : "Nenhuma profissional no período"}
+        </p>
+      </div>
+
+      <div className="relative mx-auto flex-shrink-0" style={{ width: SIZE, height: SIZE }}>
         <svg
           viewBox={`0 0 ${SIZE} ${SIZE}`}
           width={SIZE}
@@ -116,28 +130,15 @@ export function GoalArc({
         </div>
       </div>
 
-      <div className="relative min-w-[220px] flex-1">
-        <h3 className="flex items-center gap-1.5 font-display text-lg font-semibold italic text-ink">
-          <IconSparkle className="h-4 w-4 flex-shrink-0 not-italic text-accent-lavender" aria-hidden />
-          Meta do Time
-        </h3>
-        <p className="mt-0.5 text-xs text-ink-soft">{mensagem}</p>
-        <p className="mt-0.5 text-[0.7rem] text-ink-faint">
-          {totalPessoas > 0
-            ? `${metasBatidas} de ${totalPessoas} ${totalPessoas === 1 ? "bateu" : "bateram"} a meta`
-            : "Nenhuma profissional no período"}
-        </p>
-
-        <div className="mt-3 grid grid-cols-2 gap-2">
-          <StatChip k="Realizado" v={brl(realizado)} tone="mint" />
-          <StatChip k="Meta" v={meta ? brl(meta) : "—"} tone="serenity" />
-          <StatChip
-            k={excedente > 0 ? "Excedente" : "Faltam"}
-            v={excedente > 0 ? brl(excedente) : falta !== null ? brl(falta) : "—"}
-            tone={excedente > 0 ? "lavender" : "rose"}
-          />
-          <StatChip k="Premiação" v={brl(premiacao)} tone="gold" />
-        </div>
+      <div className="relative grid w-full grid-cols-2 gap-2 sm:grid-cols-4">
+        <StatChip k="Realizado" v={brl(realizado)} tone="mint" />
+        <StatChip k="Meta" v={meta ? brl(meta) : "—"} tone="serenity" />
+        <StatChip
+          k={excedente > 0 ? "Excedente" : "Faltam"}
+          v={excedente > 0 ? brl(excedente) : falta !== null ? brl(falta) : "—"}
+          tone={excedente > 0 ? "lavender" : "rose"}
+        />
+        <StatChip k="Premiação" v={brl(premiacao)} tone="gold" />
       </div>
     </div>
   );
@@ -154,9 +155,11 @@ const CHIP_TONE: Record<string, { bg: string; text: string }> = {
 function StatChip({ k, v, tone }: { k: string; v: string; tone: keyof typeof CHIP_TONE }) {
   const t = CHIP_TONE[tone];
   return (
-    <div className={`min-w-0 rounded-2xl px-3 py-2 ${t.bg}`}>
+    <div
+      className={`min-w-0 rounded-2xl border border-ink-faint/15 px-3 py-2.5 text-center ${t.bg}`}
+    >
       <p className="eyebrow truncate">{k}</p>
-      <p className={`mt-0.5 truncate text-sm font-semibold tabular-nums ${t.text}`}>{v}</p>
+      <p className={`mt-1 truncate font-display text-lg font-semibold tabular-nums ${t.text}`}>{v}</p>
     </div>
   );
 }
