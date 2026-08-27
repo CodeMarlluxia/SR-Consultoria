@@ -64,9 +64,6 @@ export function PerformanceTable({
         >
           Ranking por atingimento da meta
         </h3>
-        <span className="eyebrow hidden truncate lg:block">
-          Premiação: 10% do que passar da meta
-        </span>
       </div>
 
       <TableHeader scale={fitToHeight ? scale : 1} />
