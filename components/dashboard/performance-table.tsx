@@ -102,11 +102,20 @@ function TableHeader({ scale }: { scale: number }) {
     >
       <div>#</div>
       <div>Profissional</div>
-      <div className="text-right">Faturamento</div>
-      <div className="text-right max-lg:hidden">Meta</div>
-      <div className="max-lg:hidden">Progresso da meta</div>
-      <div className="text-right max-lg:hidden">Premiação</div>
-      <div className="text-right">Comissão</div>
+      {/* O tracking do versalete acrescenta um respiro DEPOIS da última
+          letra, o que empurra todo rótulo alinhado à direita ~0,1em para
+          dentro. A margem negativa devolve esse espaço, e aí o rótulo fecha
+          exatamente na mesma coluna dos valores da linha. */}
+      <div className="-mr-[0.1em] text-right">Faturamento</div>
+      <div className="-mr-[0.1em] text-right max-lg:hidden">Meta</div>
+      {/* Espelha o layout da célula (barra + faixa) para o rótulo ficar
+          centrado sobre a barra, e não sobre a coluna inteira. */}
+      <div className="flex items-center gap-3 max-lg:hidden">
+        <span className="min-w-0 flex-1 text-center">Progresso da meta</span>
+        <span className="w-[6.5rem] flex-shrink-0" aria-hidden />
+      </div>
+      <div className="-mr-[0.1em] text-right max-lg:hidden">Premiação</div>
+      <div className="-mr-[0.1em] text-right">Comissão</div>
     </div>
   );
 }
@@ -217,7 +226,7 @@ function PerfRow({
           </span>
         </div>
         <span
-          className="w-[5.5rem] flex-shrink-0 truncate text-ink-soft"
+          className="w-[6.5rem] flex-shrink-0 truncate text-ink-soft"
           style={fs(0.8)}
           title={
             row.meta && row.meta > row.faturamento

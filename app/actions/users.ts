@@ -3,6 +3,7 @@
 import { revalidatePath } from "next/cache";
 import { createClient as createAnonClient } from "@supabase/supabase-js";
 import { createClient } from "@/lib/supabase/server";
+import { createAdminClient, SERVICE_KEY_MISSING } from "@/lib/supabase/admin";
 import { getRole, isAdmin, type Role } from "@/lib/supabase/perfil";
 
 export interface ActionResult {
@@ -75,6 +76,100 @@ export async function updateUserRole(userId: string, role: Role): Promise<Action
   if (role !== "admin" && role !== "usuario_padrao") return { ok: false, error: "Perfil inválido." };
 
   const { error } = await admin.supabase.from("perfis").update({ role }).eq("user_id", userId);
+  if (error) return { ok: false, error: error.message };
+
+  revalidatePath("/usuarios");
+  return { ok: true };
+}
+
+export interface UserEdit {
+  email: string;
+  /** Vazio = manter a senha atual. */
+  password?: string;
+  role: Role;
+}
+
+/**
+ * Edita uma conta: e-mail, senha (opcional) e perfil.
+ *
+ * O perfil sai pela RLS normal, mas e-mail e senha vivem em `auth.users`,
+ * que a chave anônima não alcança — essa parte só roda com a Service Role
+ * Key. Quando ela não está configurada, o perfil ainda é salvo e a resposta
+ * explica o que faltou, em vez de falhar em silêncio.
+ */
+export async function updateUser(userId: string, edit: UserEdit): Promise<ActionResult> {
+  const admin = await requireAdmin();
+  if (!admin.ok) return { ok: false, error: admin.error };
+
+  const email = edit.email.trim();
+  const password = edit.password?.trim() ?? "";
+
+  if (!email) return { ok: false, error: "Informe o e-mail." };
+  if (password && password.length < 6) {
+    return { ok: false, error: "A senha precisa ter ao menos 6 caracteres." };
+  }
+  if (edit.role !== "admin" && edit.role !== "usuario_padrao") {
+    return { ok: false, error: "Perfil inválido." };
+  }
+  if (userId === admin.userId && edit.role !== "admin") {
+    return { ok: false, error: "Você não pode rebaixar o seu próprio perfil." };
+  }
+
+  const { data: atual, error: readErr } = await admin.supabase
+    .from("perfis")
+    .select("email, role")
+    .eq("user_id", userId)
+    .maybeSingle();
+  if (readErr) return { ok: false, error: readErr.message };
+  if (!atual) return { ok: false, error: "Conta não encontrada." };
+
+  const trocouEmail = email !== atual.email;
+  const precisaAuth = trocouEmail || Boolean(password);
+
+  if (precisaAuth) {
+    const service = createAdminClient();
+    if (!service) return { ok: false, error: SERVICE_KEY_MISSING };
+
+    const { error } = await service.auth.admin.updateUserById(userId, {
+      ...(trocouEmail ? { email } : {}),
+      ...(password ? { password } : {}),
+    });
+    if (error) {
+      const m = error.message.toLowerCase();
+      if (m.includes("already") && m.includes("registered")) {
+        return { ok: false, error: "Este e-mail já está em uso por outra conta." };
+      }
+      return { ok: false, error: error.message };
+    }
+  }
+
+  // `perfis.email` é uma cópia usada na listagem: mantém em dia junto.
+  const { error: updErr } = await admin.supabase
+    .from("perfis")
+    .update({ email, role: edit.role })
+    .eq("user_id", userId);
+  if (updErr) return { ok: false, error: updErr.message };
+
+  revalidatePath("/usuarios");
+  return { ok: true };
+}
+
+/**
+ * Exclui a conta de verdade, em `auth.users` — a linha de `perfis` some
+ * junto pelo ON DELETE CASCADE. Apagar só o perfil deixaria a pessoa ainda
+ * capaz de entrar, então esta operação exige a Service Role Key.
+ */
+export async function deleteUser(userId: string): Promise<ActionResult> {
+  const admin = await requireAdmin();
+  if (!admin.ok) return { ok: false, error: admin.error };
+  if (userId === admin.userId) {
+    return { ok: false, error: "Você não pode excluir a sua própria conta." };
+  }
+
+  const service = createAdminClient();
+  if (!service) return { ok: false, error: SERVICE_KEY_MISSING };
+
+  const { error } = await service.auth.admin.deleteUser(userId);
   if (error) return { ok: false, error: error.message };
 
   revalidatePath("/usuarios");

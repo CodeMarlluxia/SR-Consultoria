@@ -219,6 +219,37 @@ export function IconMoon(props: SVGProps<SVGSVGElement>) {
   );
 }
 
+/** Editar — lápis. */
+export function IconPencil(props: SVGProps<SVGSVGElement>) {
+  return (
+    <svg {...base} {...props}>
+      <path d="M4 20.2h3.6L18.9 8.9a2.05 2.05 0 0 0 0-2.9l-.9-.9a2.05 2.05 0 0 0-2.9 0L3.8 16.4V20a.2.2 0 0 0 .2.2z" />
+      <path d="m14.3 6.4 3.3 3.3" />
+    </svg>
+  );
+}
+
+/** Excluir — lixeira. */
+export function IconTrash(props: SVGProps<SVGSVGElement>) {
+  return (
+    <svg {...base} {...props}>
+      <path d="M3.8 6.3h16.4" />
+      <path d="M9 6.3V4.7a1.4 1.4 0 0 1 1.4-1.4h3.2A1.4 1.4 0 0 1 15 4.7v1.6" />
+      <path d="M5.8 6.3 6.7 19a1.7 1.7 0 0 0 1.7 1.6h7.2a1.7 1.7 0 0 0 1.7-1.6l.9-12.7" />
+      <path d="M10.3 10v6.7M13.7 10v6.7" />
+    </svg>
+  );
+}
+
+/** Confirmar — visto simples. */
+export function IconCheck(props: SVGProps<SVGSVGElement>) {
+  return (
+    <svg {...base} {...props}>
+      <path d="m4.8 12.6 4.6 4.6L19.2 7.4" />
+    </svg>
+  );
+}
+
 export function IconX(props: SVGProps<SVGSVGElement>) {
   return (
     <svg {...base} {...props}>
