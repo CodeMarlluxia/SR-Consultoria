@@ -56,4 +56,10 @@ export interface PerformanceRow {
   comissaoAcumulada: number;
   meta: number | null;
   progressoPct: number | null;
+  /** Valor que ultrapassou a meta (0 quando não atingiu). */
+  excedente: number;
+  /** 10% do excedente — só existe a partir de 100% da meta. */
+  premiacao: number;
+  /** Posição no ranking oficial (0 = troféu), definida pelo % da meta. */
+  posicao: number;
 }

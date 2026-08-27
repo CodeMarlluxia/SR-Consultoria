@@ -37,10 +37,10 @@ export function DateRangePicker({
   }
 
   const inputClass =
-    "rounded-md border border-ink-faint/25 bg-white/50 px-1.5 py-1 text-xs text-ink outline-none transition-colors focus:border-accent-lavender/60 disabled:opacity-60 dark:border-white/15 dark:bg-white/5 dark:[color-scheme:dark]";
+    "rounded-md border border-ink-faint/25 bg-white/60 px-1.5 py-1 text-xs text-ink outline-none transition-colors focus:border-brand-lilac disabled:opacity-60 dark:border-white/15 dark:bg-white/5 dark:[color-scheme:dark]";
 
   return (
-    <div className="glass flex items-center gap-1.5 rounded-lg px-2 py-1" aria-busy={pending}>
+    <div className="card flex items-center gap-1.5 rounded-pill px-2.5 py-1" aria-busy={pending}>
       <input
         type="date"
         min={min}
@@ -102,7 +102,7 @@ export function FullscreenButton({ onToggle }: { onToggle?: (full: boolean) => v
     <button
       onClick={toggle}
       aria-label={isFull ? "Sair da tela cheia" : "Entrar em tela cheia"}
-      className="inline-flex flex-shrink-0 items-center gap-1.5 rounded-lg border border-ink-faint/25 bg-white/40 px-2.5 py-1.5 text-xs font-medium text-ink-soft transition-all hover:border-accent-lavender/50 hover:text-ink dark:border-white/15 dark:bg-white/5 dark:hover:text-ink"
+      className="inline-flex flex-shrink-0 items-center gap-1.5 rounded-pill border border-ink-faint/25 bg-white/50 px-3 py-1.5 text-xs font-semibold text-ink-soft transition-all hover:border-brand-lilac hover:text-ink dark:border-white/15 dark:bg-white/5 dark:hover:text-ink"
     >
       <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth={1.8} strokeLinecap="round" strokeLinejoin="round" className="h-3.5 w-3.5">
         {isFull ? (

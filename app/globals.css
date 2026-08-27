@@ -30,6 +30,16 @@
   --glass-shadow: 0 10px 40px rgba(248, 180, 196, 0.15);
   --glass-hover: rgba(255, 255, 255, 0.55);
 
+  /* Pastéis da marca — preenchimentos, fios e avatares. Não flipam no
+     dark: são superfícies, não texto. O par legível é o ramp --accent-*. */
+  --brand-rose: #f8b4c4;
+  --brand-butter: #f0e6a8;
+  --brand-mint: #b8e8c8;
+  --brand-sky: #a8d8f0;
+  --brand-lilac: #d4b8f0;
+  /* Texto que fica POR CIMA de um pastel — constante nos dois temas. */
+  --on-pastel: #3f3a4d;
+
   /* Aurora blobs (light) */
   --aurora:
     radial-gradient(circle at 15% 20%, rgba(248, 180, 196, 0.35), transparent 45%),
@@ -95,9 +105,8 @@ body {
   min-height: 100vh;
   min-height: 100dvh;
   background-image: var(--aurora);
-  background-size: 200% 200%;
+  background-size: 100% 100%;
   background-attachment: fixed;
-  animation: aurora 18s ease-in-out infinite;
   transition: background-color 0.4s ease, color 0.4s ease;
 }
 
@@ -106,8 +115,7 @@ body {
 .aurora-bg {
   background-color: var(--page-bg);
   background-image: var(--aurora);
-  background-size: 200% 200%;
-  animation: aurora 18s ease-in-out infinite;
+  background-size: 100% 100%;
 }
 
 @keyframes aurora {
@@ -127,6 +135,54 @@ body {
   border: 1px solid var(--glass-border);
   box-shadow: var(--glass-shadow);
   transition: background 0.4s ease, border-color 0.4s ease, box-shadow 0.4s ease;
+}
+
+/* ---------------------------------------------------------------------
+   Camada de componentes — "Atelier Pastel"
+   --------------------------------------------------------------------- */
+
+/* Superfície padrão dos cards: o vidro do tema + raio unificado. */
+.card {
+  background-color: var(--glass-bg);
+  backdrop-filter: blur(18px);
+  -webkit-backdrop-filter: blur(18px);
+  border: 1px solid var(--glass-border);
+  border-radius: 18px;
+  box-shadow: var(--glass-shadow);
+  transition: background-color 0.4s ease, border-color 0.4s ease, box-shadow 0.4s ease;
+}
+
+/* Fio de cor no topo do card. Não é enfeite: identifica a natureza do
+   indicador e é a única cor saturada da peça. */
+.card-thread {
+  position: relative;
+}
+.card-thread::before {
+  content: "";
+  position: absolute;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 3px;
+  border-radius: 18px 18px 0 0;
+  background: var(--thread, var(--brand-rose));
+  opacity: 0.95;
+}
+
+/* Rótulo superior padronizado (versalete). */
+.eyebrow {
+  font-size: 0.66rem;
+  font-weight: 600;
+  letter-spacing: 0.18em;
+  text-transform: uppercase;
+  color: var(--ink-faint);
+  line-height: 1.2;
+}
+
+/* Foco visível e consistente. */
+:where(a, button, input, select, textarea, [tabindex]):focus-visible {
+  outline: 2px solid var(--accent-lavender);
+  outline-offset: 2px;
 }
 
 /* Respect reduced-motion preferences */

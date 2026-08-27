@@ -1,28 +1,32 @@
 import type { Metadata } from "next";
-import { Playfair_Display, Montserrat } from "next/font/google";
+import { Fraunces, Manrope } from "next/font/google";
 import { NavBar } from "@/components/nav-bar";
 import "./globals.css";
 
-// Elegant serif for display headings + light, refined sans for body copy.
-const playfair = Playfair_Display({
+// Fraunces: serifa de eixo óptico com terminações macias — dá o tom
+// delicado sem cair no serif de alto contraste de sempre.
+// Manrope: sans geométrico de cantos suaves, excelente em tabular-nums.
+const display = Fraunces({
   subsets: ["latin"],
-  weight: ["500", "600", "700"],
+  weight: ["400", "500", "600", "700"],
   variable: "--font-display",
+  display: "swap",
 });
-const montserrat = Montserrat({
+const sans = Manrope({
   subsets: ["latin"],
-  weight: ["300", "400", "500", "600"],
+  weight: ["400", "500", "600", "700"],
   variable: "--font-sans",
+  display: "swap",
 });
 
 export const metadata: Metadata = {
-  title: "Dashboard de Metas e Comissão",
+  title: "SR Consultoria · Metas e Comissões",
   description: "Importe relatórios, defina metas e acompanhe comissões em tempo real.",
 };
 
 export default function RootLayout({ children }: { children: React.ReactNode }) {
   return (
-    <html lang="pt-BR" suppressHydrationWarning className={`${playfair.variable} ${montserrat.variable}`}>
+    <html lang="pt-BR" suppressHydrationWarning className={`${display.variable} ${sans.variable}`}>
       <head>
         <script
           dangerouslySetInnerHTML={{
@@ -30,7 +34,7 @@ export default function RootLayout({ children }: { children: React.ReactNode }) 
           }}
         />
       </head>
-      <body className="font-sans font-light antialiased">
+      <body className="font-sans antialiased">
         <NavBar />
         {children}
       </body>

@@ -1,6 +1,10 @@
 export const brl = (n: number) =>
   n.toLocaleString("pt-BR", { style: "currency", currency: "BRL" });
 
+/** 87.4 → '87,4%' */
+export const pct = (n: number | null) =>
+  n === null ? "—" : `${n.toLocaleString("pt-BR", { maximumFractionDigits: 1 })}%`;
+
 export function initials(name: string): string {
   return name
     .split(/\s+/)
@@ -10,16 +14,60 @@ export function initials(name: string): string {
     .toUpperCase();
 }
 
-/** Progress-band → fill key + trend label. */
-export function progressBand(pct: number | null): {
-  fill: string;
+export type BandKey = "batida" | "quase" | "ritmo" | "inicio" | "sem-meta";
+
+/**
+ * Faixa de progresso → rótulo + preenchimento da barra.
+ * As barras usam os pastéis da marca (--brand-*), que são superfícies e não
+ * mudam entre temas; o rótulo usa o ramp --accent-*, que flipa no dark.
+ */
+export function progressBand(pctValue: number | null): {
+  key: BandKey;
   label: string;
+  bar: string;
+  text: string;
 } {
-  if (pct === null) return { fill: "fill-none", label: "sem meta" };
-  if (pct >= 100) return { fill: "fill-mint", label: "✨ meta batida" };
-  if (pct >= 90) return { fill: "fill-rose", label: "🔥 quase lá" };
-  if (pct >= 50) return { fill: "fill-mint", label: "📈 no ritmo" };
-  return { fill: "fill-serenity", label: "⚠️ começando" };
+  if (pctValue === null) {
+    return { key: "sem-meta", label: "sem meta", bar: "var(--ink-faint)", text: "text-ink-faint" };
+  }
+  if (pctValue >= 100) {
+    return {
+      key: "batida",
+      label: "meta batida",
+      bar: "linear-gradient(90deg, var(--brand-mint), var(--brand-butter))",
+      text: "text-accent-mint",
+    };
+  }
+  if (pctValue >= 90) {
+    return {
+      key: "quase",
+      label: "quase lá",
+      bar: "linear-gradient(90deg, var(--brand-rose), var(--brand-butter))",
+      text: "text-accent-rose",
+    };
+  }
+  if (pctValue >= 50) {
+    return {
+      key: "ritmo",
+      label: "no ritmo",
+      bar: "linear-gradient(90deg, var(--brand-lilac), var(--brand-rose))",
+      text: "text-accent-lavender",
+    };
+  }
+  return {
+    key: "inicio",
+    label: "começando",
+    bar: "linear-gradient(90deg, var(--brand-sky), var(--brand-lilac))",
+    text: "text-accent-serenity",
+  };
+}
+
+/** Selo da posição. Pódio recebe símbolo; o resto, número. */
+export function rankBadge(posicao: number): string {
+  if (posicao === 0) return "🏆";
+  if (posicao === 1) return "🥈";
+  if (posicao === 2) return "🥉";
+  return String(posicao + 1);
 }
 
 const MESES = [

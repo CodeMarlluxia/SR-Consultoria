@@ -1,117 +1,154 @@
 "use client";
 
-import { brl, initials } from "./format";
+import type { CSSProperties } from "react";
+import { initials } from "./format";
 import { useCountUp } from "./use-count-up";
 
-/** Big animated money/number KPI card. */
+// ---------------------------------------------------------------------
+//  Cada card carrega um fio de cor no topo (--thread). O fio identifica a
+//  natureza do indicador e é a única cor saturada da peça — o resto fica
+//  quieto. Os pastéis vêm de --brand-* (superfície, constante nos temas);
+//  os números usam text-accent-*, que clareia no modo escuro.
+// ---------------------------------------------------------------------
+export type Tone = "rose" | "gold" | "mint" | "serenity" | "lavender";
+
+const TONE: Record<Tone, { thread: string; value: string; chip: string; ring: string }> = {
+  rose:      { thread: "var(--brand-rose)",   value: "text-accent-rose",     chip: "bg-brand-rose/30",   ring: "from-brand-rose to-brand-lilac" },
+  gold:      { thread: "var(--brand-butter)", value: "text-accent-gold",     chip: "bg-brand-butter/35", ring: "from-brand-butter to-brand-mint" },
+  mint:      { thread: "var(--brand-mint)",   value: "text-accent-mint",     chip: "bg-brand-mint/35",   ring: "from-brand-mint to-brand-sky" },
+  serenity:  { thread: "var(--brand-sky)",    value: "text-accent-serenity", chip: "bg-brand-sky/35",    ring: "from-brand-sky to-brand-lilac" },
+  lavender:  { thread: "var(--brand-lilac)",  value: "text-accent-lavender", chip: "bg-brand-lilac/30",  ring: "from-brand-lilac to-brand-rose" },
+};
+
+const threadStyle = (tone: Tone): CSSProperties =>
+  ({ "--thread": TONE[tone].thread } as CSSProperties);
+
+/** KPI numérico com contagem animada. */
 export function MetricCard({
   label,
   value,
   sub,
-  accent = "mint",
+  tone = "mint",
   isCurrency = true,
 }: {
   label: string;
   value: number;
   sub?: string;
-  accent?: "mint" | "serenity" | "lavender" | "rose";
+  tone?: Tone;
   isCurrency?: boolean;
 }) {
   const animated = useCountUp(value);
-  const valColor = {
-    mint: "text-accent-mint",
-    serenity: "text-accent-serenity",
-    lavender: "text-accent-lavender",
-    rose: "text-accent-rose",
-  }[accent];
+  const brlCompact = (n: number) =>
+    n.toLocaleString("pt-BR", { style: "currency", currency: "BRL" });
 
   return (
-    <div className="glass relative overflow-hidden rounded-[18px] px-4 py-3.5 transition-all duration-500 hover:-translate-y-1 hover:shadow-glass-lg">
-      <div className="mb-1 text-xs font-medium uppercase tracking-[0.14em] text-ink-faint">{label}</div>
-      <div className={`font-display text-3xl font-semibold tabular-nums tracking-tight ${valColor}`}>
-        {isCurrency ? brl(animated) : Math.round(animated).toLocaleString("pt-BR")}
-      </div>
-      {sub && <div className="mt-0.5 text-xs text-ink-soft">{sub}</div>}
+    <div
+      className="card card-thread overflow-hidden px-4 pb-3 pt-3.5 transition-transform duration-300 hover:-translate-y-0.5"
+      style={threadStyle(tone)}
+    >
+      <p className="eyebrow truncate">{label}</p>
+      <p
+        className={`mt-1.5 truncate font-display text-2xl font-semibold leading-none tabular-nums tracking-tight ${TONE[tone].value}`}
+      >
+        {isCurrency ? brlCompact(animated) : Math.round(animated).toLocaleString("pt-BR")}
+      </p>
+      {sub && <p className="mt-1 truncate text-[0.7rem] text-ink-soft">{sub}</p>}
     </div>
   );
 }
 
-/** Champion card — crown (revenue) or star (volume). */
+/** Card de destaque com avatar da profissional. */
 export function ChampionCard({
-  variant,
+  tone,
+  icon,
   label,
   nome,
   stat,
+  hint,
+  highlight = false,
 }: {
-  variant: "crown" | "bolt";
+  tone: Tone;
+  icon: string;
   label: string;
   nome: string;
   stat: string;
+  hint?: string;
+  highlight?: boolean;
 }) {
-  const isCrown = variant === "crown";
+  const t = TONE[tone];
+
   return (
     <div
-      className={`glass relative overflow-hidden rounded-[18px] px-4 py-3.5 transition-all duration-500 hover:-translate-y-1 hover:shadow-glass-lg ${
-        isCrown
-          ? "bg-gradient-to-br from-accent-gold/20 to-transparent"
-          : "bg-gradient-to-br from-accent-rose/20 to-transparent"
-      }`}
+      className={[
+        "card card-thread overflow-hidden px-4 pb-3 pt-3.5 transition-transform duration-300 hover:-translate-y-0.5",
+        highlight ? "ring-1 ring-brand-rose/60" : "",
+      ].join(" ")}
+      style={threadStyle(tone)}
     >
-      {isCrown ? (
-        <div className="absolute right-3.5 top-3 text-xl opacity-80 transition-transform duration-700 hover:rotate-[360deg]" aria-hidden>
-          💎
-        </div>
-      ) : (
-        <div
-          className="absolute right-3.5 top-3 flex h-8 w-8 animate-float items-center justify-center rounded-full text-xs font-semibold text-white"
-          style={{ background: "linear-gradient(135deg,#d9a3b1,#c98da0)" }}
+      <div className="flex items-start justify-between gap-2">
+        <p className="eyebrow truncate">{label}</p>
+        <span
+          className={`flex h-6 w-6 flex-shrink-0 items-center justify-center rounded-full text-xs ${t.chip}`}
           aria-hidden
         >
-          ★
-        </div>
-      )}
-      <div className="mb-2 text-xs font-medium uppercase tracking-[0.14em] text-ink-faint">{label}</div>
-      <div className="flex items-center gap-2.5">
-        <div
-          className="flex h-10 w-10 flex-shrink-0 items-center justify-center rounded-full text-sm font-semibold text-white"
-          style={{
-            background: isCrown
-              ? "linear-gradient(135deg,#d8cd8f,#c2b155)"
-              : "linear-gradient(135deg,#d9a3b1,#c98da0)",
-          }}
+          {icon}
+        </span>
+      </div>
+
+      <div className="mt-2 flex items-center gap-2.5">
+        <span
+          className={`flex h-9 w-9 flex-shrink-0 items-center justify-center rounded-full bg-gradient-to-br ${t.ring} font-display text-xs font-semibold text-onPastel`}
+          aria-hidden
         >
           {initials(nome)}
-        </div>
+        </span>
         <div className="min-w-0">
-          <div className="truncate font-display text-lg font-semibold text-ink">{nome}</div>
-          <div className="text-xs text-ink-soft">{stat}</div>
+          <p className="truncate font-display text-base font-semibold leading-tight text-ink" title={nome}>
+            {nome}
+          </p>
+          <p className={`truncate text-sm font-semibold tabular-nums ${t.value}`}>{stat}</p>
         </div>
       </div>
+
+      {hint && <p className="mt-1.5 truncate text-[0.7rem] text-ink-soft">{hint}</p>}
     </div>
   );
 }
 
-/** Compact analytical card (most-executed service / best-selling category). */
+/** Card analítico (serviço mais executado / categoria mais vendida). */
 export function InsightCard({
   label,
   title,
   detail,
-  accent = "serenity",
+  tone = "serenity",
   icon,
 }: {
   label: string;
   title: string;
   detail: string;
-  accent?: "serenity" | "lavender";
+  tone?: Tone;
   icon: string;
 }) {
-  const detailColor = accent === "serenity" ? "text-accent-serenity" : "text-accent-lavender";
+  const t = TONE[tone];
+
   return (
-    <div className="glass relative flex flex-col justify-center overflow-hidden rounded-[18px] px-5 py-4 transition-all duration-500 hover:-translate-y-1 hover:shadow-glass-lg">
-      <div className="absolute right-4 top-4 text-2xl opacity-70" aria-hidden>{icon}</div>
-      <div className="mb-1.5 text-xs font-semibold uppercase tracking-[0.14em] text-ink-faint">{label}</div>
-      <div className="truncate pr-8 font-display text-2xl font-semibold text-ink" title={title}>{title}</div>
-      <div className={`mt-1 text-xl font-semibold tabular-nums ${detailColor}`}>{detail}</div>
+    <div
+      className="card card-thread flex flex-col justify-center overflow-hidden px-4 pb-3.5 pt-4 transition-transform duration-300 hover:-translate-y-0.5"
+      style={threadStyle(tone)}
+    >
+      <div className="flex items-start justify-between gap-2">
+        <p className="eyebrow truncate">{label}</p>
+        <span
+          className={`flex h-6 w-6 flex-shrink-0 items-center justify-center rounded-full text-xs ${t.chip}`}
+          aria-hidden
+        >
+          {icon}
+        </span>
+      </div>
+      <p className="mt-2 truncate font-display text-xl font-semibold text-ink" title={title}>
+        {title}
+      </p>
+      <p className={`mt-1 truncate text-sm font-semibold tabular-nums ${t.value}`}>{detail}</p>
     </div>
   );
 }

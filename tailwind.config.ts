@@ -19,7 +19,19 @@ const config: Config = {
           soft: "var(--ink-soft)",
           faint: "var(--ink-faint)",
         },
-        // Pastel accent palette (used for decorative gradients / fills).
+        // Pastéis da marca — preenchimentos, fios, avatares.
+        // Hex fixo (não var) para que modificadores de opacidade funcionem:
+        // bg-brand-rose/25, from-brand-sky/40 etc.
+        brand: {
+          rose: "#f8b4c4",
+          butter: "#f0e6a8",
+          mint: "#b8e8c8",
+          sky: "#a8d8f0",
+          lilac: "#d4b8f0",
+        },
+        // Texto sobre pastel — constante nos dois temas.
+        onPastel: "#3f3a4d",
+        // Alias legado da paleta pastel.
         pastel: {
           rose: "#f8b4c4",
           gold: "#f0e6a8",
@@ -50,9 +62,13 @@ const config: Config = {
         },
       },
       fontFamily: {
-        display: ["var(--font-display)", "'Playfair Display'", "Georgia", "serif"],
-        sans: ["var(--font-sans)", "'Montserrat'", "system-ui", "sans-serif"],
+        display: ["var(--font-display)", "'Fraunces'", "Georgia", "serif"],
+        sans: ["var(--font-sans)", "'Manrope'", "system-ui", "sans-serif"],
         mono: ["var(--font-mono)", "ui-monospace", "monospace"],
+      },
+      borderRadius: {
+        card: "18px",
+        pill: "999px",
       },
       boxShadow: {
         glass: "0 10px 40px rgba(248,180,196,0.15)",
@@ -65,6 +81,10 @@ const config: Config = {
           "0%": { backgroundPosition: "0% 50%" },
           "50%": { backgroundPosition: "100% 50%" },
           "100%": { backgroundPosition: "0% 50%" },
+        },
+        "pearl-in": {
+          "0%": { opacity: "0", transform: "scale(0.4)" },
+          "100%": { opacity: "1", transform: "scale(1)" },
         },
         "fade-rise": {
           "0%": { opacity: "0", transform: "translateY(12px)" },
@@ -96,6 +116,7 @@ const config: Config = {
       animation: {
         aurora: "aurora 18s ease-in-out infinite",
         "fade-rise": "fade-rise 0.5s ease-out forwards",
+        "pearl-in": "pearl-in 0.6s cubic-bezier(.2,.8,.2,1) forwards",
         "progress-shine": "progress-shine 1.8s ease-in-out infinite",
         wave: "wave 2.5s linear infinite",
         float: "float 3s ease-in-out infinite",
