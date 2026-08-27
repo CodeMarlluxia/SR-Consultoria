@@ -1,132 +1,138 @@
 "use client";
 
-import { LogoMark } from "@/components/brand-mark";
+import type { IconComponent } from "@/components/icons";
 import { useCountUp } from "./use-count-up";
 
 // ---------------------------------------------------------------------
-//  Cada card recebe um véu suave da cor do tom (--tint) no fundo, que dá o
-//  tom colorido e delicado ao conjunto sem pesar a leitura. Os pastéis vêm
-//  de --brand-* (superfície, constante nos temas); os números usam
-//  text-accent-*, que clareia no modo escuro.
+//  Cartões do topo. Cada um recebe um véu pastel (.tile-*) e um selo de
+//  ícone no canto — e o ícone é o do ASSUNTO do bloco (cédula, moedas,
+//  presente, alvo, agenda…), não o logotipo. O logotipo agora aparece uma
+//  única vez, na marca do topo, que é onde ele identifica alguma coisa.
 // ---------------------------------------------------------------------
 export type Tone = "rose" | "gold" | "mint" | "serenity" | "lavender";
 
-const TONE: Record<Tone, { value: string; chip: string; tint: string }> = {
-  rose:      { value: "text-accent-rose",     chip: "bg-brand-rose/30",   tint: "from-brand-rose/20" },
-  gold:      { value: "text-accent-gold",     chip: "bg-brand-butter/35", tint: "from-brand-butter/22" },
-  mint:      { value: "text-accent-mint",     chip: "bg-brand-mint/35",   tint: "from-brand-mint/20" },
-  serenity:  { value: "text-accent-serenity", chip: "bg-brand-sky/35",    tint: "from-brand-sky/20" },
-  lavender:  { value: "text-accent-lavender", chip: "bg-brand-lilac/30",  tint: "from-brand-lilac/18" },
+const TONE: Record<Tone, { tile: string; badge: string; value: string }> = {
+  rose: { tile: "tile-rose", badge: "bg-brand-rose/70", value: "text-accent-rose" },
+  gold: { tile: "tile-butter", badge: "bg-brand-butter/80", value: "text-accent-gold" },
+  mint: { tile: "tile-mint", badge: "bg-brand-mint/70", value: "text-accent-mint" },
+  serenity: { tile: "tile-sky", badge: "bg-brand-sky/70", value: "text-accent-serenity" },
+  lavender: { tile: "tile-lilac", badge: "bg-brand-lilac/65", value: "text-accent-lavender" },
 };
+
+/** Selo redondo do ícone, no canto superior direito do cartão. */
+function IconBadge({ icon: Icon, tone }: { icon: IconComponent; tone: Tone }) {
+  const t = TONE[tone];
+  return (
+    <span
+      className={`flex h-9 w-9 flex-shrink-0 items-center justify-center rounded-full ring-1 ring-white/60 dark:ring-white/10 ${t.badge} ${t.value}`}
+      aria-hidden
+    >
+      <Icon className="h-[1.15rem] w-[1.15rem]" />
+    </span>
+  );
+}
+
+const brlFull = (n: number) => n.toLocaleString("pt-BR", { style: "currency", currency: "BRL" });
 
 /** KPI numérico com contagem animada. */
 export function MetricCard({
   label,
   value,
   sub,
+  icon,
   tone = "mint",
   isCurrency = true,
 }: {
   label: string;
   value: number;
   sub?: string;
+  icon: IconComponent;
   tone?: Tone;
   isCurrency?: boolean;
 }) {
   const animated = useCountUp(value);
   const t = TONE[tone];
-  const brlCompact = (n: number) =>
-    n.toLocaleString("pt-BR", { style: "currency", currency: "BRL" });
 
   return (
-    <div className={`card overflow-hidden bg-gradient-to-br ${t.tint} to-transparent px-4 pb-3.5 pt-4`}>
+    <div className={`tile ${t.tile} flex flex-col px-4 pb-3.5 pt-3.5`}>
       <div className="flex items-start justify-between gap-2">
-        <p className="eyebrow truncate">{label}</p>
-        <LogoMark className="h-8 w-8" />
+        <p className="eyebrow mt-1 truncate">{label}</p>
+        <IconBadge icon={icon} tone={tone} />
       </div>
       <p
-        className={`mt-2 truncate font-display text-2xl font-semibold leading-none tabular-nums tracking-tight ${t.value}`}
+        className={`mt-2 truncate font-display text-[1.7rem] font-semibold leading-none tabular-nums tracking-tight ${t.value}`}
       >
-        {isCurrency ? brlCompact(animated) : Math.round(animated).toLocaleString("pt-BR")}
+        {isCurrency ? brlFull(animated) : Math.round(animated).toLocaleString("pt-BR")}
       </p>
-      {sub && <p className="mt-1.5 truncate text-[0.7rem] text-ink-soft">{sub}</p>}
+      {sub && <p className="mt-1.5 truncate text-[0.72rem] text-ink-soft">{sub}</p>}
     </div>
   );
 }
 
-/** Card de destaque com avatar da profissional. */
+/** Cartão de destaque: quem lidera a meta, quem mais atendeu. */
 export function ChampionCard({
   tone,
   label,
   nome,
   stat,
   hint,
-  highlight = false,
+  icon,
 }: {
   tone: Tone;
   label: string;
   nome: string;
   stat: string;
   hint?: string;
-  highlight?: boolean;
+  icon: IconComponent;
 }) {
   const t = TONE[tone];
 
   return (
-    <div
-      className={[
-        "card overflow-hidden bg-gradient-to-br px-4 pb-3.5 pt-4",
-        t.tint,
-        "to-transparent",
-        highlight ? "ring-1 ring-brand-rose/60" : "",
-      ].join(" ")}
-    >
+    <div className={`tile ${t.tile} flex flex-col px-4 pb-3.5 pt-3.5`}>
       <div className="flex items-start justify-between gap-2">
-        <LogoMark className="h-8 w-8" />
-        <span className={`truncate rounded-full px-2 py-0.5 text-[0.6rem] font-bold uppercase tracking-[0.12em] ${t.chip} ${t.value}`}>
-          {label}
-        </span>
+        <p className="eyebrow mt-1 truncate">{label}</p>
+        <IconBadge icon={icon} tone={tone} />
       </div>
-
-      <div className="mt-3 flex items-center gap-2.5">
-        <LogoMark className="h-9 w-9" />
-        <div className="min-w-0">
-          <p className="truncate font-display text-base font-semibold leading-tight text-ink" title={nome}>
-            {nome}
-          </p>
-          <p className={`truncate text-sm font-semibold tabular-nums ${t.value}`}>{stat}</p>
-        </div>
-      </div>
-
-      {hint && <p className="mt-1.5 truncate text-[0.7rem] text-ink-soft">{hint}</p>}
+      <p
+        className="mt-2 truncate font-display text-xl font-semibold uppercase leading-tight tracking-tight text-ink"
+        title={nome}
+      >
+        {nome}
+      </p>
+      <p className={`truncate font-display text-lg font-semibold leading-tight tabular-nums ${t.value}`}>
+        {stat}
+      </p>
+      {hint && <p className="mt-1 truncate text-[0.72rem] text-ink-soft">{hint}</p>}
     </div>
   );
 }
 
-/** Card analítico (serviço mais executado / categoria mais vendida). */
+/** Cartão analítico (serviço mais executado / categoria mais vendida). */
 export function InsightCard({
   label,
   title,
   detail,
+  icon,
   tone = "serenity",
 }: {
   label: string;
   title: string;
   detail: string;
+  icon: IconComponent;
   tone?: Tone;
 }) {
   const t = TONE[tone];
 
   return (
-    <div className={`card flex flex-col justify-center overflow-hidden bg-gradient-to-br ${t.tint} to-transparent px-4 pb-4 pt-4`}>
+    <div className={`tile ${t.tile} flex flex-col justify-center px-4 pb-4 pt-3.5`}>
       <div className="flex items-start justify-between gap-2">
-        <p className="eyebrow truncate">{label}</p>
-        <LogoMark className="h-8 w-8" />
+        <p className="eyebrow mt-1 truncate">{label}</p>
+        <IconBadge icon={icon} tone={tone} />
       </div>
-      <p className="mt-2 truncate font-display text-xl font-semibold italic text-ink" title={title}>
+      <p className="mt-2 truncate font-display text-lg font-semibold text-ink" title={title}>
         {title}
       </p>
-      <p className={`mt-1 truncate text-sm font-semibold tabular-nums ${t.value}`}>{detail}</p>
+      <p className="mt-0.5 truncate text-sm font-medium tabular-nums text-ink-soft">{detail}</p>
     </div>
   );
 }

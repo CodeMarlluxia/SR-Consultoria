@@ -1,7 +1,7 @@
 import type { Config } from "tailwindcss";
 
 // =====================================================================
-//  "Luxo Pastel" — soft glass-morphism design tokens
+//  "Atelier Pastel" — tokens de superfície pastel + vidro fosco
 // =====================================================================
 const config: Config = {
   darkMode: "class",
@@ -12,6 +12,11 @@ const config: Config = {
   ],
   theme: {
     extend: {
+      // Ponto de quebra extra: abaixo dele a marca fica só com o selo, sem
+      // o nome, para a barra do topo não espremer os controles de conta.
+      screens: {
+        xs: "420px",
+      },
       colors: {
         // Ink text ramp — driven by CSS vars so it flips in dark mode.
         ink: {
@@ -62,12 +67,13 @@ const config: Config = {
         },
       },
       fontFamily: {
-        display: ["var(--font-display)", "'Playfair Display'", "Georgia", "serif"],
+        display: ["var(--font-display)", "Manrope", "system-ui", "sans-serif"],
         sans: ["var(--font-sans)", "'Poppins'", "system-ui", "sans-serif"],
         mono: ["var(--font-mono)", "ui-monospace", "monospace"],
       },
       borderRadius: {
         card: "22px",
+        tile: "20px",
         pill: "999px",
       },
       boxShadow: {

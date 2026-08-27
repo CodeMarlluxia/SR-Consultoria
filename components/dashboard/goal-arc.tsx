@@ -1,25 +1,23 @@
 "use client";
 
+import type { ReactNode } from "react";
 import { brl } from "./format";
 import { useCountUp } from "./use-count-up";
-import { IconSparkle } from "@/components/icons";
 
 // ---------------------------------------------------------------------
-//  Elemento assinatura: o Anel da Meta.
-//  O arco percorre as cinco cores da marca na ordem da paleta e termina
-//  numa pérola, que marca exatamente onde a equipe parou. Pétalas discretas
-//  marcam 25 / 50 / 75 / 100%.
+//  Elemento assinatura: o Arco da Meta.
+//  Meio-círculo que vai do rosa ao azul da paleta, com o número grande no
+//  vazio do arco. O painel inteiro carrega o degradê da marca e abriga os
+//  dois cartões de insight nas laterais; as quatro pastilhas de resumo
+//  ficam montadas na borda de baixo, como na referência.
 // ---------------------------------------------------------------------
-const SIZE = 176;
-const C = SIZE / 2;
-const R = 70;
-const CIRC = 2 * Math.PI * R;
-const STROKE = 12;
-
-function pointAt(percent: number): { x: number; y: number } {
-  const rad = ((percent * 3.6 - 90) * Math.PI) / 180;
-  return { x: C + R * Math.cos(rad), y: C + R * Math.sin(rad) };
-}
+const W = 240;
+const H = 132;
+const CX = W / 2;
+const CY = 112;
+const R = 88;
+const STROKE = 18;
+const LEN = Math.PI * R; // comprimento do meio-arco
 
 export function GoalArc({
   realizado,
@@ -28,6 +26,8 @@ export function GoalArc({
   premiacao,
   metasBatidas,
   totalPessoas,
+  left,
+  right,
 }: {
   realizado: number;
   meta: number | null;
@@ -35,12 +35,13 @@ export function GoalArc({
   premiacao: number;
   metasBatidas: number;
   totalPessoas: number;
+  left?: ReactNode;
+  right?: ReactNode;
 }) {
   const value = progressoPct ?? 0;
   const clamped = Math.min(value, 100);
   const animated = useCountUp(value, 1400);
-  const offset = CIRC * (1 - clamped / 100);
-  const pearl = pointAt(clamped);
+  const offset = LEN * (1 - clamped / 100);
   const falta = meta ? Math.max(0, meta - realizado) : null;
   const excedente = meta ? Math.max(0, realizado - meta) : 0;
 
@@ -56,110 +57,105 @@ export function GoalArc({
             : "Início de jornada — vamos acelerar juntas.";
 
   return (
-    <div className="card relative flex h-full flex-col items-center justify-center gap-3 overflow-hidden px-5 py-4">
-      <div
-        className="pointer-events-none absolute -right-10 -top-16 h-48 w-48 rounded-full opacity-40 blur-3xl"
-        style={{ background: "radial-gradient(circle, var(--brand-lilac), transparent 70%)" }}
-        aria-hidden
-      />
+    <section className="relative sm:mb-11">
+      <div className="tile tile-atelier px-4 pb-5 pt-4 sm:px-6 sm:pb-16">
+        <p className="eyebrow text-center">Meta do time</p>
 
-      <div className="relative w-full text-center">
-        <h3 className="flex items-center justify-center gap-1.5 font-display text-lg font-semibold italic text-ink">
-          <IconSparkle className="h-4 w-4 flex-shrink-0 not-italic text-accent-lavender" aria-hidden />
-          Meta do Time
-        </h3>
-        <p className="mt-0.5 text-xs text-ink-soft">{mensagem}</p>
-        <p className="mt-0.5 text-[0.7rem] text-ink-faint">
-          {totalPessoas > 0
-            ? `${metasBatidas} de ${totalPessoas} ${totalPessoas === 1 ? "bateu" : "bateram"} a meta`
-            : "Nenhuma profissional no período"}
-        </p>
-      </div>
+        <div className="mt-3 grid items-center gap-4 lg:grid-cols-[minmax(0,1fr)_auto_minmax(0,1fr)] lg:gap-8">
+          <div className="order-2 lg:order-1">{left}</div>
 
-      <div className="relative mx-auto flex-shrink-0" style={{ width: SIZE, height: SIZE }}>
-        <svg
-          viewBox={`0 0 ${SIZE} ${SIZE}`}
-          width={SIZE}
-          height={SIZE}
-          role="img"
-          aria-label={`Progresso da meta da equipe: ${Math.round(value)} por cento`}
-        >
-          <defs>
-            <linearGradient id="metaRing" x1="0" y1="0" x2="1" y2="1">
-              <stop offset="0" stopColor="var(--brand-rose)" />
-              <stop offset="0.3" stopColor="var(--brand-butter)" />
-              <stop offset="0.6" stopColor="var(--brand-mint)" />
-              <stop offset="0.82" stopColor="var(--brand-sky)" />
-              <stop offset="1" stopColor="var(--brand-lilac)" />
-            </linearGradient>
-          </defs>
+          <div className="order-1 flex flex-col items-center lg:order-2">
+            <div className="relative" style={{ width: W, maxWidth: "100%" }}>
+              <svg
+                viewBox={`0 0 ${W} ${H}`}
+                width="100%"
+                role="img"
+                aria-label={`Progresso da meta da equipe: ${Math.round(value)} por cento`}
+              >
+                <defs>
+                  <linearGradient id="metaArc" x1="0" y1="0" x2="1" y2="0">
+                    <stop offset="0" stopColor="var(--brand-rose)" />
+                    <stop offset="0.5" stopColor="var(--brand-lilac)" />
+                    <stop offset="1" stopColor="var(--brand-sky)" />
+                  </linearGradient>
+                </defs>
 
-          <circle cx={C} cy={C} r={R} fill="none" stroke="var(--ink-faint)" strokeOpacity={0.18} strokeWidth={STROKE} />
+                <path
+                  d={`M ${CX - R} ${CY} A ${R} ${R} 0 0 1 ${CX + R} ${CY}`}
+                  fill="none"
+                  stroke="var(--ink-faint)"
+                  strokeOpacity={0.2}
+                  strokeWidth={STROKE}
+                  strokeLinecap="round"
+                />
+                <path
+                  d={`M ${CX - R} ${CY} A ${R} ${R} 0 0 1 ${CX + R} ${CY}`}
+                  fill="none"
+                  stroke="url(#metaArc)"
+                  strokeWidth={STROKE}
+                  strokeLinecap="round"
+                  strokeDasharray={LEN}
+                  strokeDashoffset={offset}
+                  style={{ transition: "stroke-dashoffset 2.2s cubic-bezier(.45,.05,.2,1)" }}
+                />
+              </svg>
 
-          {[25, 50, 75, 100].map((p) => {
-            const tick = pointAt(p);
-            return <circle key={p} cx={tick.x} cy={tick.y} r={1.8} fill="var(--ink-faint)" fillOpacity={0.55} />;
-          })}
+              <div className="pointer-events-none absolute inset-x-0 bottom-1 flex flex-col items-center">
+                <span className="font-display text-[2.6rem] font-semibold leading-none tabular-nums text-ink">
+                  {Math.round(animated)}
+                  <span className="text-2xl text-ink-soft">%</span>
+                </span>
+                <span className="eyebrow mt-1">performance</span>
+              </div>
+            </div>
 
-          <circle
-            cx={C}
-            cy={C}
-            r={R}
-            fill="none"
-            stroke="url(#metaRing)"
-            strokeWidth={STROKE}
-            strokeLinecap="round"
-            transform={`rotate(-90 ${C} ${C})`}
-            strokeDasharray={CIRC}
-            strokeDashoffset={offset}
-            style={{ transition: "stroke-dashoffset 2.2s cubic-bezier(.45,.05,.2,1)" }}
-          />
+            <p className="mt-2 text-center text-sm text-ink-soft">{mensagem}</p>
+            <p className="text-center text-xs text-ink-faint">
+              {totalPessoas > 0
+                ? `${metasBatidas} de ${totalPessoas} ${totalPessoas === 1 ? "bateu" : "bateram"} a meta`
+                : "Nenhuma profissional no período"}
+            </p>
+          </div>
 
-          {/* pérola marcadora */}
-          <circle cx={pearl.x} cy={pearl.y} r={8} fill="var(--glass-bg)" />
-          <circle cx={pearl.x} cy={pearl.y} r={8} fill="#ffffff" fillOpacity={0.85} />
-          <circle cx={pearl.x} cy={pearl.y} r={4.5} fill="var(--brand-rose)" />
-        </svg>
-
-        <div className="pointer-events-none absolute inset-0 flex flex-col items-center justify-center">
-          <span className="font-display text-[2.2rem] font-semibold leading-none tabular-nums text-ink">
-            {Math.round(animated)}
-            <span className="text-xl text-ink-soft">%</span>
-          </span>
-          <span className="eyebrow mt-1">performance</span>
+          <div className="order-3">{right}</div>
         </div>
       </div>
 
-      <div className="relative grid w-full grid-cols-2 gap-2 sm:grid-cols-4">
-        <StatChip k="Realizado" v={brl(realizado)} tone="mint" />
+      {/* Pastilhas de resumo. Em telas largas elas ficam montadas sobre a
+          borda inferior do painel; no celular voltam para o fluxo normal,
+          onde sobrepor cortaria o conteúdo seguinte. */}
+      <div className="mt-3 grid grid-cols-2 gap-2 sm:absolute sm:inset-x-0 sm:bottom-0 sm:mt-0 sm:flex sm:translate-y-1/2 sm:justify-center sm:gap-3 sm:px-4">
+        <StatChip k="Realizado" v={brl(realizado)} tone="rose" />
         <StatChip k="Meta" v={meta ? brl(meta) : "—"} tone="serenity" />
         <StatChip
           k={excedente > 0 ? "Excedente" : "Faltam"}
           v={excedente > 0 ? brl(excedente) : falta !== null ? brl(falta) : "—"}
-          tone={excedente > 0 ? "lavender" : "rose"}
+          tone="gold"
         />
-        <StatChip k="Premiação" v={brl(premiacao)} tone="gold" />
+        <StatChip k="Premiação" v={brl(premiacao)} tone="mint" />
       </div>
-    </div>
+    </section>
   );
 }
 
-const CHIP_TONE: Record<string, { bg: string; text: string }> = {
-  mint:      { bg: "bg-brand-mint/22",   text: "text-accent-mint" },
-  serenity:  { bg: "bg-brand-sky/22",    text: "text-accent-serenity" },
-  lavender:  { bg: "bg-brand-lilac/22",  text: "text-accent-lavender" },
-  rose:      { bg: "bg-brand-rose/22",   text: "text-accent-rose" },
-  gold:      { bg: "bg-brand-butter/28", text: "text-accent-gold" },
-};
+const CHIP_TONE = {
+  mint: "var(--brand-mint)",
+  serenity: "var(--brand-sky)",
+  lavender: "var(--brand-lilac)",
+  rose: "var(--brand-rose)",
+  gold: "var(--brand-butter)",
+} as const;
 
 function StatChip({ k, v, tone }: { k: string; v: string; tone: keyof typeof CHIP_TONE }) {
-  const t = CHIP_TONE[tone];
   return (
     <div
-      className={`min-w-0 rounded-2xl border border-ink-faint/15 px-3 py-2.5 text-center ${t.bg}`}
+      className="min-w-0 rounded-2xl border-2 bg-white/90 px-4 py-2 text-center shadow-sm backdrop-blur-sm dark:bg-[#241d31]/90 sm:px-6"
+      style={{ borderColor: CHIP_TONE[tone] }}
     >
       <p className="eyebrow truncate">{k}</p>
-      <p className={`mt-1 truncate font-display text-lg font-semibold tabular-nums ${t.text}`}>{v}</p>
+      <p className="mt-0.5 truncate font-display text-base font-semibold tabular-nums text-ink">
+        {v}
+      </p>
     </div>
   );
 }

@@ -1,18 +1,23 @@
 "use client";
 
 import { useEffect, useState } from "react";
+import { IconMoon, IconSun } from "@/components/icons";
 
 /**
- * Light/dark theme toggle. Persists the choice in localStorage and toggles the
- * `dark` class on <html>. A matching inline script in the root layout applies
- * the saved theme before paint to avoid a flash of the wrong theme.
+ * Interruptor de tema claro/escuro. Guarda a escolha em localStorage e
+ * alterna a classe `dark` no <html>; um script inline no layout raiz
+ * aplica o tema salvo antes da pintura para não piscar o tema errado.
+ *
+ * Visual de switch (trilho + botão deslizante), como na referência, com
+ * `role="switch"` para que leitores de tela anunciem ligado/desligado.
  */
 export function ThemeToggle() {
   const [dark, setDark] = useState(false);
+  const [mounted, setMounted] = useState(false);
 
   useEffect(() => {
-    const isDark = document.documentElement.classList.contains("dark");
-    setDark(isDark);
+    setDark(document.documentElement.classList.contains("dark"));
+    setMounted(true);
   }, []);
 
   function toggle() {
@@ -28,22 +33,27 @@ export function ThemeToggle() {
 
   return (
     <button
+      type="button"
+      role="switch"
+      aria-checked={mounted ? dark : false}
       onClick={toggle}
       aria-label={dark ? "Ativar modo claro" : "Ativar modo escuro"}
-      className="inline-flex flex-shrink-0 items-center justify-center rounded-lg border border-ink-faint/25 bg-white/40 p-1.5 text-ink-soft transition-all hover:border-accent-lavender/50 hover:text-ink dark:border-white/15 dark:bg-white/5 dark:text-ink-soft dark:hover:text-ink"
+      title={dark ? "Modo claro" : "Modo escuro"}
+      className={[
+        "relative inline-flex h-8 w-[3.4rem] flex-shrink-0 items-center rounded-full border transition-colors duration-300",
+        dark
+          ? "border-white/15 bg-ink/80"
+          : "border-ink-faint/25 bg-gradient-to-r from-brand-lilac/50 to-brand-sky/50",
+      ].join(" ")}
     >
-      {dark ? (
-        // Sun
-        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth={1.8} strokeLinecap="round" strokeLinejoin="round" className="h-4 w-4">
-          <circle cx="12" cy="12" r="4" />
-          <path d="M12 2v2M12 20v2M4.93 4.93l1.41 1.41M17.66 17.66l1.41 1.41M2 12h2M20 12h2M6.34 17.66l-1.41 1.41M19.07 4.93l-1.41 1.41" />
-        </svg>
-      ) : (
-        // Moon
-        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth={1.8} strokeLinecap="round" strokeLinejoin="round" className="h-4 w-4">
-          <path d="M21 12.79A9 9 0 1 1 11.21 3 7 7 0 0 0 21 12.79z" />
-        </svg>
-      )}
+      <span
+        className={[
+          "flex h-6 w-6 items-center justify-center rounded-full bg-white text-ink-soft shadow-sm transition-transform duration-300",
+          dark ? "translate-x-[1.65rem]" : "translate-x-[0.2rem]",
+        ].join(" ")}
+      >
+        {dark ? <IconMoon className="h-3.5 w-3.5" /> : <IconSun className="h-3.5 w-3.5" />}
+      </span>
     </button>
   );
 }

@@ -2,7 +2,9 @@ import type { SVGProps } from "react";
 
 // ---------------------------------------------------------------------
 //  Conjunto de ícones do app — traço fino (1.8), pontas arredondadas,
-//  sem preenchimento. Substitui emojis por um visual único e consistente.
+//  sem preenchimento. Cada bloco do dashboard usa o ícone do seu assunto
+//  (dinheiro, moedas, presente, alvo, agenda, tesoura, etiqueta) em vez do
+//  logotipo, que agora aparece só na marca.
 // ---------------------------------------------------------------------
 const base: SVGProps<SVGSVGElement> = {
   viewBox: "0 0 24 24",
@@ -12,6 +14,8 @@ const base: SVGProps<SVGSVGElement> = {
   strokeLinecap: "round",
   strokeLinejoin: "round",
 };
+
+export type IconComponent = (props: SVGProps<SVGSVGElement>) => React.ReactElement;
 
 export function IconSparkle(props: SVGProps<SVGSVGElement>) {
   return (
@@ -41,6 +45,17 @@ export function IconTarget(props: SVGProps<SVGSVGElement>) {
   );
 }
 
+/** Faturamento — cédula com a moeda ao centro. */
+export function IconBanknote(props: SVGProps<SVGSVGElement>) {
+  return (
+    <svg {...base} {...props}>
+      <rect x="2.5" y="6" width="19" height="12" rx="2.5" />
+      <circle cx="12" cy="12" r="2.6" />
+      <path d="M6 9.5v5M18 9.5v5" />
+    </svg>
+  );
+}
+
 export function IconWallet(props: SVGProps<SVGSVGElement>) {
   return (
     <svg {...base} {...props}>
@@ -51,6 +66,7 @@ export function IconWallet(props: SVGProps<SVGSVGElement>) {
   );
 }
 
+/** Comissão acumulada — pilha de moedas. */
 export function IconCoins(props: SVGProps<SVGSVGElement>) {
   return (
     <svg {...base} {...props}>
@@ -58,6 +74,40 @@ export function IconCoins(props: SVGProps<SVGSVGElement>) {
       <path d="M3.5 7.5V12c0 1.66 2.46 3 5.5 3s5.5-1.34 5.5-3V7.5" />
       <path d="M3.5 12v4.5c0 1.66 2.46 3 5.5 3 2.2 0 4.1-.7 5-1.72" />
       <path d="M15 10.3c2.5.2 4.5 1.4 4.5 2.9 0 1.3-1.5 2.4-3.5 2.8" />
+    </svg>
+  );
+}
+
+/** Premiação — presente com laço. */
+export function IconGift(props: SVGProps<SVGSVGElement>) {
+  return (
+    <svg {...base} {...props}>
+      <rect x="3" y="9" width="18" height="11.5" rx="2" />
+      <path d="M2.2 9a1 1 0 0 1 1-1h17.6a1 1 0 0 1 1 1v2.2a1 1 0 0 1-1 1H3.2a1 1 0 0 1-1-1z" />
+      <path d="M12 8v12.5" />
+      <path d="M12 8S10.8 4 8.6 4a2.2 2.2 0 0 0 0 4.4z" />
+      <path d="M12 8s1.2-4 3.4-4a2.2 2.2 0 0 1 0 4.4z" />
+    </svg>
+  );
+}
+
+/** Atendimentos — agenda com o dia marcado. */
+export function IconCalendarCheck(props: SVGProps<SVGSVGElement>) {
+  return (
+    <svg {...base} {...props}>
+      <rect x="3.2" y="5" width="17.6" height="15.5" rx="2.4" />
+      <path d="M3.2 9.6h17.6M8 3.2v3.4M16 3.2v3.4" />
+      <path d="m9.3 14.7 1.9 1.9 3.6-3.9" />
+    </svg>
+  );
+}
+
+/** Ritmo / progresso da equipe — seta em ascensão. */
+export function IconTrendUp(props: SVGProps<SVGSVGElement>) {
+  return (
+    <svg {...base} {...props}>
+      <path d="M3.5 16.5 9 11l3.5 3.5L20.5 6.5" />
+      <path d="M15.5 6.5h5v5" />
     </svg>
   );
 }
@@ -93,6 +143,16 @@ export function IconUsers(props: SVGProps<SVGSVGElement>) {
   );
 }
 
+export function IconUser(props: SVGProps<SVGSVGElement>) {
+  return (
+    <svg {...base} {...props}>
+      <circle cx="12" cy="8.5" r="3.6" />
+      <path d="M4.8 20c.7-3.7 3.4-5.8 7.2-5.8s6.5 2.1 7.2 5.8" />
+    </svg>
+  );
+}
+
+/** Serviço executado — tesoura do salão. */
 export function IconScissors(props: SVGProps<SVGSVGElement>) {
   return (
     <svg {...base} {...props}>
@@ -103,6 +163,7 @@ export function IconScissors(props: SVGProps<SVGSVGElement>) {
   );
 }
 
+/** Categoria — etiqueta de produto. */
 export function IconTag(props: SVGProps<SVGSVGElement>) {
   return (
     <svg {...base} {...props}>
@@ -137,6 +198,23 @@ export function IconLogout(props: SVGProps<SVGSVGElement>) {
       <path d="M9 4H6a2 2 0 0 0-2 2v12a2 2 0 0 0 2 2h3" />
       <path d="M14.5 16 19 12l-4.5-4" />
       <path d="M19 12H9" />
+    </svg>
+  );
+}
+
+export function IconSun(props: SVGProps<SVGSVGElement>) {
+  return (
+    <svg {...base} {...props}>
+      <circle cx="12" cy="12" r="4" />
+      <path d="M12 2v2M12 20v2M4.93 4.93l1.41 1.41M17.66 17.66l1.41 1.41M2 12h2M20 12h2M6.34 17.66l-1.41 1.41M19.07 4.93l-1.41 1.41" />
+    </svg>
+  );
+}
+
+export function IconMoon(props: SVGProps<SVGSVGElement>) {
+  return (
+    <svg {...base} {...props}>
+      <path d="M21 12.79A9 9 0 1 1 11.21 3 7 7 0 0 0 21 12.79z" />
     </svg>
   );
 }

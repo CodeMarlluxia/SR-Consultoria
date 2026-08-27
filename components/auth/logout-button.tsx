@@ -14,9 +14,9 @@ export function LogoutButton({ compact = false }: { compact?: boolean }) {
         disabled={pending}
         aria-label={pending ? "Saindo…" : "Sair"}
         title="Sair"
-        className="flex h-11 w-11 items-center justify-center rounded-2xl text-ink-faint transition-all hover:bg-white/50 hover:text-accent-rose disabled:opacity-60 dark:hover:bg-white/10"
+        className="flex h-9 w-9 flex-shrink-0 items-center justify-center rounded-full border border-ink-faint/20 bg-white/50 text-ink-soft transition-colors hover:border-brand-rose hover:text-accent-rose disabled:opacity-60 dark:border-white/10 dark:bg-white/5"
       >
-        <IconLogout className="h-5 w-5" />
+        <IconLogout className="h-4 w-4" />
       </button>
     );
   }

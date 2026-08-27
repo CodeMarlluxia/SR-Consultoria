@@ -1,12 +1,13 @@
 import type { Metadata } from "next";
-import { Playfair_Display, Poppins } from "next/font/google";
+import { Manrope, Poppins } from "next/font/google";
 import { AppShell } from "@/components/app-shell";
 import "./globals.css";
 
-// Playfair Display: serifa de alto contraste, elegante e feminina — usada
-// nos títulos e no logotipo. Poppins: geométrica arredondada, mantém boa
-// leitura em rótulos e números sem perder o tom delicado do conjunto.
-const display = Playfair_Display({
+// Manrope: grotesca moderna, com números de largura constante e ótimo peso
+// semibold — é a fonte dos títulos e de todo valor monetário do painel.
+// Poppins: geométrica arredondada, mantém a leitura leve em rótulos e
+// textos corridos sem perder o tom delicado do conjunto.
+const display = Manrope({
   subsets: ["latin"],
   weight: ["500", "600", "700", "800"],
   variable: "--font-display",
@@ -19,12 +20,12 @@ const sans = Poppins({
   display: "swap",
 });
 
+// O favicon vem da convenção de arquivos do App Router: `app/icon.png` e
+// `app/apple-icon.png` são detectados pelo Next e viram <link rel="icon">
+// automaticamente — por isso não há campo `icons` aqui.
 export const metadata: Metadata = {
   title: "SR Consultoria · Metas e Comissões",
   description: "Importe relatórios, defina metas e acompanhe comissões em tempo real.",
-  // Aponta para public/logo.png — quando o arquivo for salvo ali, vira o
-  // favicon automaticamente, sem precisar mexer em mais nada.
-  icons: { icon: "/logo.png" },
 };
 
 export default function RootLayout({ children }: { children: React.ReactNode }) {

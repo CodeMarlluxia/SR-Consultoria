@@ -8,6 +8,7 @@ export const pct = (n: number | null) =>
 export function initials(name: string): string {
   return name
     .split(/\s+/)
+    .filter(Boolean)
     .map((w) => w[0])
     .slice(0, 2)
     .join("")
@@ -20,6 +21,8 @@ export type BandKey = "batida" | "quase" | "ritmo" | "inicio" | "sem-meta";
  * Faixa de progresso → rótulo + preenchimento da barra.
  * As barras usam os pastéis da marca (--brand-*), que são superfícies e não
  * mudam entre temas; o rótulo usa o ramp --accent-*, que flipa no dark.
+ * Cada faixa tem uma cor só (verde / rosa / azul / lilás) para que a barra
+ * seja lida de relance, sem decifrar um degradê.
  */
 export function progressBand(pctValue: number | null): {
   key: BandKey;
@@ -28,13 +31,18 @@ export function progressBand(pctValue: number | null): {
   text: string;
 } {
   if (pctValue === null) {
-    return { key: "sem-meta", label: "sem meta", bar: "var(--ink-faint)", text: "text-ink-faint" };
+    return {
+      key: "sem-meta",
+      label: "sem meta",
+      bar: "color-mix(in srgb, var(--ink-faint) 40%, transparent)",
+      text: "text-ink-faint",
+    };
   }
   if (pctValue >= 100) {
     return {
       key: "batida",
       label: "meta batida",
-      bar: "linear-gradient(90deg, var(--brand-mint), var(--brand-butter))",
+      bar: "linear-gradient(90deg, var(--brand-mint), color-mix(in srgb, var(--brand-mint) 78%, var(--brand-butter)))",
       text: "text-accent-mint",
     };
   }
@@ -42,7 +50,7 @@ export function progressBand(pctValue: number | null): {
     return {
       key: "quase",
       label: "quase lá",
-      bar: "linear-gradient(90deg, var(--brand-rose), var(--brand-butter))",
+      bar: "linear-gradient(90deg, var(--brand-rose), color-mix(in srgb, var(--brand-rose) 80%, var(--brand-lilac)))",
       text: "text-accent-rose",
     };
   }
@@ -50,15 +58,15 @@ export function progressBand(pctValue: number | null): {
     return {
       key: "ritmo",
       label: "no ritmo",
-      bar: "linear-gradient(90deg, var(--brand-lilac), var(--brand-rose))",
-      text: "text-accent-lavender",
+      bar: "linear-gradient(90deg, var(--brand-sky), color-mix(in srgb, var(--brand-sky) 75%, var(--brand-lilac)))",
+      text: "text-accent-serenity",
     };
   }
   return {
     key: "inicio",
     label: "começando",
-    bar: "linear-gradient(90deg, var(--brand-sky), var(--brand-lilac))",
-    text: "text-accent-serenity",
+    bar: "linear-gradient(90deg, var(--brand-lilac), color-mix(in srgb, var(--brand-lilac) 75%, var(--brand-sky)))",
+    text: "text-accent-lavender",
   };
 }
 

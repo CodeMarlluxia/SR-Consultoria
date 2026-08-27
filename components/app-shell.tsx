@@ -2,14 +2,18 @@ import Link from "next/link";
 import { createClient } from "@/lib/supabase/server";
 import { LogoutButton } from "@/components/auth/logout-button";
 import { ThemeToggle } from "@/components/theme-toggle";
-import { BrandMark, LogoMark } from "@/components/brand-mark";
-import { SidebarNav } from "@/components/sidebar-nav";
+import { BrandMark } from "@/components/brand-mark";
+import { TopNav } from "@/components/top-nav";
 import { getRole } from "@/lib/supabase/perfil";
 
 /**
- * Casca visual do app: sidebar de ícones (navegação + conta, no rodapé) e um
- * topo minimalista com a marca centralizada. Ambos só aparecem para quem
- * está autenticado — sem sessão, sobra um topo mínimo para login/cadastro.
+ * Casca visual do app: uma única barra no topo com a marca à esquerda, a
+ * navegação em pílulas ao centro e a conta à direita — a sidebar de ícones
+ * saiu de cena e devolveu a largura inteira ao conteúdo. Sem sessão sobra
+ * só a marca, para login/cadastro.
+ *
+ * Em telas estreitas a navegação desce para uma segunda linha, para não
+ * espremer a marca nem os controles de conta.
  */
 export async function AppShell({ children }: { children: React.ReactNode }) {
   const supabase = await createClient();
@@ -20,7 +24,7 @@ export async function AppShell({ children }: { children: React.ReactNode }) {
   if (!user) {
     return (
       <div className="flex min-h-dvh flex-col">
-        <header className="glass flex h-[var(--nav-h)] flex-shrink-0 items-center justify-center border-x-0 border-t-0 px-6">
+        <header className="topbar flex h-[var(--nav-h)] flex-shrink-0 items-center justify-center px-6">
           <Link href="/login">
             <BrandMark />
           </Link>
@@ -34,37 +38,39 @@ export async function AppShell({ children }: { children: React.ReactNode }) {
   const role = await getRole(supabase, user.id);
 
   return (
-    <div className="flex min-h-dvh">
-      <aside className="glass hidden w-[var(--sidebar-w)] flex-shrink-0 flex-col items-center gap-6 border-y-0 border-l-0 py-5 sm:flex">
-        <Link href="/dashboard" aria-label="Ir para o painel">
-          <LogoMark />
-        </Link>
+    <div className="flex min-h-dvh flex-col">
+      <header className="topbar sticky top-0 z-40 flex-shrink-0">
+        <div className="flex h-[var(--nav-h)] items-center gap-3 px-4 sm:px-6">
+          {/* Zonas laterais flexíveis de mesmo peso: as pílulas ficam no
+              centro real da barra, independentemente da largura da marca. */}
+          <div className="flex min-w-0 flex-1 items-center">
+            <Link href="/dashboard" className="min-w-0" aria-label="Ir para o painel">
+              <BrandMark />
+            </Link>
+          </div>
 
-        <SidebarNav role={role} />
+          <div className="hidden flex-shrink-0 md:flex">
+            <TopNav role={role} />
+          </div>
 
-        {/* Conta: tema, avatar e sair — no rodapé da sidebar. */}
-        <div className="mt-auto flex flex-col items-center gap-2 border-t border-ink-faint/10 pt-4">
-          <ThemeToggle />
-          <span
-            className="flex h-9 w-9 flex-shrink-0 items-center justify-center rounded-full bg-gradient-to-br from-brand-sky to-brand-lilac font-display text-sm font-semibold text-onPastel"
-            title={user.email ?? undefined}
-            aria-hidden
-          >
-            {initial}
-          </span>
-          <LogoutButton compact />
+          <div className="flex flex-1 items-center justify-end gap-2">
+            <span
+              className="flex h-9 w-9 items-center justify-center rounded-full bg-gradient-to-br from-brand-sky to-brand-lilac font-display text-sm font-semibold text-onPastel ring-1 ring-white/50 dark:ring-white/10"
+              title={user.email ?? undefined}
+            >
+              {initial}
+            </span>
+            <LogoutButton compact />
+            <ThemeToggle />
+          </div>
         </div>
-      </aside>
 
-      <div className="flex min-w-0 flex-1 flex-col">
-        <header className="glass relative flex h-[var(--nav-h)] flex-shrink-0 items-center justify-center border-x-0 border-t-0 px-4 sm:px-6">
-          <Link href="/dashboard">
-            <BrandMark size="lg" />
-          </Link>
-        </header>
+        <div className="flex justify-center px-3 pb-2 md:hidden">
+          <TopNav role={role} />
+        </div>
+      </header>
 
-        <main className="min-w-0 flex-1">{children}</main>
-      </div>
+      <main className="min-w-0 flex-1">{children}</main>
     </div>
   );
 }

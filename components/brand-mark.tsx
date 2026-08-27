@@ -4,7 +4,11 @@ import type { CSSProperties } from "react";
 import { useEffect, useState } from "react";
 import { IconSparkle } from "@/components/icons";
 
-const LOGO_SRC = "/logo.jpg";
+// O arquivo em public/ é o logotipo tratado: fundo removido, recorte justo
+// e traço recolorido no degradê rosa → lilás da paleta. Por ser PNG com
+// transparência ele é *contido* dentro do disco pastel (object-contain),
+// nunca cortado.
+const LOGO_SRC = "/logo.png";
 
 /**
  * Selo circular da marca. Mostra o ícone vetorial até confirmar — via uma
@@ -39,15 +43,18 @@ export function LogoMark({
 
   return (
     <span
-      className={`flex flex-shrink-0 items-center justify-center overflow-hidden rounded-full text-onPastel ${
-        className ?? (lg ? "h-12 w-12" : "h-9 w-9")
+      className={`flex flex-shrink-0 items-center justify-center overflow-hidden rounded-full text-onPastel ring-1 ring-white/60 dark:ring-white/10 ${
+        className ?? (lg ? "h-12 w-12" : "h-10 w-10")
       }`}
-      style={{ background: "linear-gradient(135deg, var(--brand-rose), var(--brand-lilac))", ...style }}
+      style={{
+        background: "linear-gradient(140deg, var(--brand-rose), var(--brand-lilac))",
+        ...style,
+      }}
       aria-hidden
     >
       {loaded ? (
         // eslint-disable-next-line @next/next/no-img-element
-        <img src={LOGO_SRC} alt="" className="h-full w-full object-cover" />
+        <img src={LOGO_SRC} alt="" className="h-[68%] w-[68%] object-contain" />
       ) : (
         <IconSparkle className={lg ? "h-5 w-5" : "h-4 w-4"} />
       )}
@@ -55,7 +62,7 @@ export function LogoMark({
   );
 }
 
-/** Lockup da marca: selo + nome em serifa + tagline. */
+/** Lockup da marca: selo + nome + tagline. */
 export function BrandMark({
   compact = false,
   size = "sm",
@@ -66,14 +73,18 @@ export function BrandMark({
   const lg = size === "lg";
 
   return (
-    <div className={`flex min-w-0 items-center ${lg ? "gap-3.5" : "gap-2.5"}`}>
+    <div className={`flex min-w-0 items-center ${lg ? "gap-3.5" : "gap-3"}`}>
       <LogoMark size={size} />
       {!compact && (
-        <div className="min-w-0 leading-tight">
-          <p className={`truncate font-display font-semibold uppercase tracking-[0.08em] text-ink ${lg ? "text-2xl" : "text-lg"}`}>
+        <div className="hidden min-w-0 leading-tight xs:block">
+          <p
+            className={`truncate font-display font-semibold uppercase tracking-[0.04em] text-accent-lavender ${
+              lg ? "text-2xl" : "text-xl"
+            }`}
+          >
             SR Consultoria
           </p>
-          <p className="truncate text-[0.6rem] font-semibold uppercase tracking-[0.22em] text-ink-faint">
+          <p className="truncate text-[0.6rem] font-semibold uppercase tracking-[0.18em] text-ink-faint">
             Metas &amp; Comissões
           </p>
         </div>
