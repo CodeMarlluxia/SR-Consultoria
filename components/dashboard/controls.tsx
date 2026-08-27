@@ -3,6 +3,94 @@
 import { useRouter } from "next/navigation";
 import { useEffect, useState, useTransition } from "react";
 
+// ---------------------------------------------------------------------
+//  'YYYY-MM-DD' <-> 'DD/MM/AAAA'. Um <input type="date"> nativo formata o
+//  valor exibido de acordo com o idioma do navegador/SO — em muitos casos
+//  isso mostra mm/dd/aaaa (americano), mesmo com o site em pt-BR. Por isso
+//  a data é um campo de texto mascarado próprio, sempre dd/mm/aaaa.
+// ---------------------------------------------------------------------
+function isoToBr(iso: string): string {
+  const [y, m, d] = iso.split("-");
+  if (!y || !m || !d) return "";
+  return `${d}/${m}/${y}`;
+}
+
+/** Só os dígitos, formatados progressivamente como dd/mm/aaaa. */
+function maskBrDate(raw: string): string {
+  const digits = raw.replace(/\D/g, "").slice(0, 8);
+  const d = digits.slice(0, 2);
+  const m = digits.slice(2, 4);
+  const y = digits.slice(4, 8);
+  return [d, m, y].filter(Boolean).join("/");
+}
+
+/** 'DD/MM/AAAA' -> 'YYYY-MM-DD', ou null se a data não existe no calendário. */
+function brToIso(br: string): string | null {
+  const match = /^(\d{2})\/(\d{2})\/(\d{4})$/.exec(br);
+  if (!match) return null;
+  const [, dd, mm, yyyy] = match;
+  const d = Number(dd);
+  const m = Number(mm);
+  const y = Number(yyyy);
+  const date = new Date(y, m - 1, d);
+  const valid = date.getFullYear() === y && date.getMonth() === m - 1 && date.getDate() === d;
+  if (!valid) return null;
+  return `${yyyy}-${mm}-${dd}`;
+}
+
+/** Campo de data com máscara dd/mm/aaaa, convertendo para ISO por baixo. */
+function DateField({
+  value,
+  min,
+  max,
+  disabled,
+  ariaLabel,
+  onCommit,
+}: {
+  value: string;
+  min: string;
+  max: string;
+  disabled?: boolean;
+  ariaLabel: string;
+  onCommit: (iso: string) => void;
+}) {
+  const [text, setText] = useState(() => isoToBr(value));
+
+  // Mantém o campo em sincronia quando o valor muda por fora (ex.: após
+  // aplicar o outro campo, ou navegação para um novo período).
+  useEffect(() => {
+    setText(isoToBr(value));
+  }, [value]);
+
+  function commit() {
+    const iso = brToIso(text);
+    if (!iso || iso < min || iso > max) {
+      setText(isoToBr(value)); // inválida ou fora do intervalo: reverte
+      return;
+    }
+    onCommit(iso);
+  }
+
+  return (
+    <input
+      type="text"
+      inputMode="numeric"
+      placeholder="dd/mm/aaaa"
+      maxLength={10}
+      value={text}
+      disabled={disabled}
+      onChange={(e) => setText(maskBrDate(e.target.value))}
+      onBlur={commit}
+      onKeyDown={(e) => {
+        if (e.key === "Enter") e.currentTarget.blur();
+        if (e.key === "Escape") setText(isoToBr(value));
+      }}
+      className="w-[5.5rem] rounded-md border border-ink-faint/25 bg-white/60 px-1.5 py-1 text-xs tabular-nums text-ink outline-none transition-colors focus:border-brand-lilac disabled:opacity-60 dark:border-white/15 dark:bg-white/5"
+      aria-label={ariaLabel}
+    />
+  );
+}
+
 /**
  * Date-range picker — the dashboard's ONLY period control.
  *
@@ -36,32 +124,11 @@ export function DateRangePicker({
     });
   }
 
-  const inputClass =
-    "rounded-md border border-ink-faint/25 bg-white/60 px-1.5 py-1 text-xs text-ink outline-none transition-colors focus:border-brand-lilac disabled:opacity-60 dark:border-white/15 dark:bg-white/5 dark:[color-scheme:dark]";
-
   return (
     <div className="card flex items-center gap-1.5 rounded-pill px-2.5 py-1" aria-busy={pending}>
-      <input
-        type="date"
-        min={min}
-        max={max}
-        value={from}
-        disabled={pending}
-        onChange={(e) => apply(e.target.value, to)}
-        className={inputClass}
-        aria-label="Data inicial"
-      />
+      <DateField min={min} max={max} value={from} disabled={pending} onCommit={(iso) => apply(iso, to)} ariaLabel="Data inicial" />
       <span className="text-xs text-ink-faint">–</span>
-      <input
-        type="date"
-        min={min}
-        max={max}
-        value={to}
-        disabled={pending}
-        onChange={(e) => apply(from, e.target.value)}
-        className={inputClass}
-        aria-label="Data final"
-      />
+      <DateField min={min} max={max} value={to} disabled={pending} onCommit={(iso) => apply(from, iso)} ariaLabel="Data final" />
       {(from !== min || to !== max) && (
         <button
           onClick={() => apply(min, max)}
