@@ -4,6 +4,7 @@ import { LogoutButton } from "@/components/auth/logout-button";
 import { ThemeToggle } from "@/components/theme-toggle";
 import { BrandMark } from "@/components/brand-mark";
 import { SidebarNav } from "@/components/sidebar-nav";
+import { IconSparkle } from "@/components/icons";
 
 /**
  * Casca visual do app: sidebar de ícones + topo com a marca e a conta,
@@ -37,10 +38,10 @@ export async function AppShell({ children }: { children: React.ReactNode }) {
         <Link
           href="/dashboard"
           aria-label="Ir para o painel"
-          className="flex h-10 w-10 flex-shrink-0 items-center justify-center rounded-full text-base text-onPastel"
+          className="flex h-10 w-10 flex-shrink-0 items-center justify-center rounded-full text-onPastel"
           style={{ background: "linear-gradient(135deg, var(--brand-rose), var(--brand-lilac))" }}
         >
-          ✿
+          <IconSparkle className="h-4 w-4" />
         </Link>
 
         <SidebarNav />

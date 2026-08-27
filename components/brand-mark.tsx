@@ -1,13 +1,15 @@
+import { IconSparkle } from "@/components/icons";
+
 /** Lockup da marca: ícone em pastel + nome em serifa itálica + tagline. */
 export function BrandMark({ compact = false }: { compact?: boolean }) {
   return (
     <div className="flex min-w-0 items-center gap-2.5">
       <span
-        className="flex h-9 w-9 flex-shrink-0 items-center justify-center rounded-full text-base leading-none text-onPastel"
+        className="flex h-9 w-9 flex-shrink-0 items-center justify-center rounded-full text-onPastel"
         style={{ background: "linear-gradient(135deg, var(--brand-rose), var(--brand-lilac))" }}
         aria-hidden
       >
-        ✿
+        <IconSparkle className="h-4 w-4" />
       </span>
       {!compact && (
         <div className="min-w-0 leading-tight">

@@ -1,6 +1,6 @@
 "use client";
 
-import type { CSSProperties } from "react";
+import type { CSSProperties, ReactNode } from "react";
 import { initials } from "./format";
 import { useCountUp } from "./use-count-up";
 
@@ -37,7 +37,7 @@ export function MetricCard({
   value: number;
   sub?: string;
   tone?: Tone;
-  icon?: string;
+  icon?: ReactNode;
   isCurrency?: boolean;
 }) {
   const animated = useCountUp(value);
@@ -54,7 +54,7 @@ export function MetricCard({
         <p className="eyebrow truncate">{label}</p>
         {icon && (
           <span
-            className={`flex h-8 w-8 flex-shrink-0 items-center justify-center rounded-full text-sm ${t.chip}`}
+            className={`flex h-8 w-8 flex-shrink-0 items-center justify-center rounded-full ${t.chip} ${t.value}`}
             aria-hidden
           >
             {icon}
@@ -82,7 +82,7 @@ export function ChampionCard({
   highlight = false,
 }: {
   tone: Tone;
-  icon: string;
+  icon: ReactNode;
   label: string;
   nome: string;
   stat: string;
@@ -103,7 +103,7 @@ export function ChampionCard({
     >
       <div className="flex items-start justify-between gap-2">
         <span
-          className={`flex h-8 w-8 flex-shrink-0 items-center justify-center rounded-full text-sm ${t.chip}`}
+          className={`flex h-8 w-8 flex-shrink-0 items-center justify-center rounded-full ${t.chip} ${t.value}`}
           aria-hidden
         >
           {icon}
@@ -145,7 +145,7 @@ export function InsightCard({
   title: string;
   detail: string;
   tone?: Tone;
-  icon: string;
+  icon: ReactNode;
 }) {
   const t = TONE[tone];
 
@@ -157,7 +157,7 @@ export function InsightCard({
       <div className="flex items-start justify-between gap-2">
         <p className="eyebrow truncate">{label}</p>
         <span
-          className={`flex h-8 w-8 flex-shrink-0 items-center justify-center rounded-full text-sm ${t.chip}`}
+          className={`flex h-8 w-8 flex-shrink-0 items-center justify-center rounded-full ${t.chip} ${t.value}`}
           aria-hidden
         >
           {icon}

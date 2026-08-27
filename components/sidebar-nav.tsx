@@ -3,25 +3,7 @@
 import Link from "next/link";
 import { usePathname } from "next/navigation";
 import type { SVGProps } from "react";
-
-function IconHome(props: SVGProps<SVGSVGElement>) {
-  return (
-    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth={1.8} strokeLinecap="round" strokeLinejoin="round" {...props}>
-      <path d="M3 11.5 12 4l9 7.5" />
-      <path d="M5.5 9.8V19a1 1 0 0 0 1 1h11a1 1 0 0 0 1-1V9.8" />
-    </svg>
-  );
-}
-
-function IconTarget(props: SVGProps<SVGSVGElement>) {
-  return (
-    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth={1.8} strokeLinecap="round" strokeLinejoin="round" {...props}>
-      <circle cx="12" cy="12" r="8.5" />
-      <circle cx="12" cy="12" r="4.5" />
-      <circle cx="12" cy="12" r="0.6" fill="currentColor" />
-    </svg>
-  );
-}
+import { IconHome, IconTarget } from "@/components/icons";
 
 const ITEMS: { href: string; label: string; icon: (p: SVGProps<SVGSVGElement>) => React.ReactElement }[] = [
   { href: "/dashboard", label: "Painel", icon: IconHome },
