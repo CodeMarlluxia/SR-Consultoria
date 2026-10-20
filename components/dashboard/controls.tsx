@@ -96,7 +96,7 @@ function DateField({
  * Date-range picker — the dashboard's ONLY period control.
  *
  * Picking a window pushes `?de=&ate=` onto the URL. `/dashboard` is a Server
- * Component, so the navigation re-queries Supabase for that window (sales by
+ * Component, so the navigation re-queries the database for that window (sales by
  * data_venda, goals for every month it touches) and the whole tree re-renders.
  * `min`/`max` span the full extent of imported data, so any month that was
  * imported is reachable straight from these two inputs.

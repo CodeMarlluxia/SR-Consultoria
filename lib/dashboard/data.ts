@@ -1,11 +1,11 @@
-import { createClient } from "@/lib/supabase/server";
+import { db } from "@/lib/db";
 import type { SaleRecord } from "@/lib/dashboard/compute";
 
 // =====================================================================
 //  Server loader.
 //
 //  The date-range picker is the ONLY period control: the selected
-//  [from, to] window drives the Supabase query directly. A window may span
+//  [from, to] window drives the SQL query directly. A window may span
 //  more than one month, so goals — which are stored per month (mes_ano) —
 //  are loaded for every month the window touches and summed per professional.
 // =====================================================================
@@ -78,23 +78,10 @@ function projectionDays(from: string, to: string): { diasDecorridos: number; dia
 
 /** Full extent of the imported data — the picker's min/max bounds. */
 export async function getDataBounds(): Promise<{ min: string | null; max: string | null }> {
-  const supabase = await createClient();
-  const [{ data: first }, { data: last }] = await Promise.all([
-    supabase
-      .from("vendas_importadas")
-      .select("data_venda")
-      .order("data_venda", { ascending: true })
-      .limit(1),
-    supabase
-      .from("vendas_importadas")
-      .select("data_venda")
-      .order("data_venda", { ascending: false })
-      .limit(1),
-  ]);
-  return {
-    min: (first?.[0]?.data_venda as string) ?? null,
-    max: (last?.[0]?.data_venda as string) ?? null,
-  };
+  const { rows } = await db.query<{ min: string | null; max: string | null }>(
+    "select min(data_venda) as min, max(data_venda) as max from vendas_importadas",
+  );
+  return rows[0];
 }
 
 /**
@@ -106,30 +93,22 @@ export async function loadDashboardPayload(
   from: string,
   to: string,
 ): Promise<DashboardPayload> {
-  const supabase = await createClient();
   const months = monthsInRange(from, to);
 
-  const [{ data: vendas, error: vErr }, { data: metas, error: mErr }] = await Promise.all([
-    supabase
-      .from("vendas_importadas")
-      .select(
-        "profissional_id, data_venda, valor_venda, valor_comissao_calculada, categoria, servico, profissionais(nome)",
-      )
-      .gte("data_venda", from)
-      .lte("data_venda", to)
-      .order("data_venda", { ascending: true }),
-    supabase
-      .from("metas")
-      .select("profissional_id, valor_meta")
-      .in("mes_ano", months.length ? months : ["__none__"]),
+  const [{ rows: vendas }, { rows: metas }] = await Promise.all([
+    db.query(
+      `select v.profissional_id, p.nome, v.data_venda, v.valor_venda,
+              v.valor_comissao_calculada, v.categoria, v.servico
+         from vendas_importadas v join profissionais p on p.id = v.profissional_id
+        where v.data_venda between $1 and $2
+        order by v.data_venda`,
+      [from, to],
+    ),
+    db.query("select profissional_id, valor_meta from metas where mes_ano = any($1::text[])", [months]),
   ]);
 
-  if (vErr) throw new Error(`vendas: ${vErr.message}`);
-  if (mErr) throw new Error(`metas: ${mErr.message}`);
-
-  const sales: SaleRecord[] = (vendas ?? []).map((v) => {
-    const rel = v.profissionais as unknown as { nome: string } | { nome: string }[] | null;
-    const nome = Array.isArray(rel) ? rel[0]?.nome : rel?.nome;
+  const sales: SaleRecord[] = vendas.map((v) => {
+    const nome = v.nome as string;
     return {
       profissionalId: v.profissional_id as string,
       nome: nome ?? "\u2014",
@@ -144,7 +123,7 @@ export async function loadDashboardPayload(
   // A window spanning N months carries N monthly goals per professional —
   // sum them so the target matches the span being measured.
   const metaByProf = new Map<string, number>();
-  for (const m of metas ?? []) {
+  for (const m of metas) {
     const id = m.profissional_id as string;
     metaByProf.set(id, (metaByProf.get(id) ?? 0) + Number(m.valor_meta));
   }

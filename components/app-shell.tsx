@@ -1,10 +1,9 @@
 import Link from "next/link";
-import { createClient } from "@/lib/supabase/server";
+import { getUser } from "@/lib/auth/user";
 import { LogoutButton } from "@/components/auth/logout-button";
 import { ThemeToggle } from "@/components/theme-toggle";
 import { BrandMark } from "@/components/brand-mark";
 import { TopNav } from "@/components/top-nav";
-import { getRole } from "@/lib/supabase/perfil";
 
 /**
  * Casca visual do app: uma única barra no topo com a marca à esquerda, a
@@ -16,10 +15,7 @@ import { getRole } from "@/lib/supabase/perfil";
  * espremer a marca nem os controles de conta.
  */
 export async function AppShell({ children }: { children: React.ReactNode }) {
-  const supabase = await createClient();
-  const {
-    data: { user },
-  } = await supabase.auth.getUser();
+  const user = await getUser();
 
   if (!user) {
     return (
@@ -35,7 +31,7 @@ export async function AppShell({ children }: { children: React.ReactNode }) {
   }
 
   const initial = (user.email ?? "?").charAt(0).toUpperCase();
-  const role = await getRole(supabase, user.id);
+  const { role } = user;
 
   return (
     <div className="flex min-h-dvh flex-col">

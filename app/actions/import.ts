@@ -1,15 +1,16 @@
 "use server";
 
-import { createClient } from "@/lib/supabase/server";
+import { db } from "@/lib/db";
+import { getUser, isAdmin } from "@/lib/auth/user";
 import type { ParsedSaleRow, PersistedGoal } from "@/lib/types";
 
 // =====================================================================
-//  Server Actions — persist the imported period to Supabase.
+//  Server Actions — persist the imported period to PostgreSQL.
 //
 //  Flow:
 //    1. upsert professionals (get their ids)
 //    2. upsert goals for the period
-//    3. bulk-upsert sales, ignoring rows whose hash already exists
+//    3. bulk-insert sales, skipping rows whose hash already exists
 //       (idempotent re-imports)
 // =====================================================================
 
@@ -26,29 +27,27 @@ export interface SaveResult {
   duplicatasIgnoradas?: number;
 }
 
+/** Importing is an admin-only screen; the actions enforce it too. */
+async function requireAdmin(): Promise<string | null> {
+  const user = await getUser();
+  if (!user) return "Sessão expirada.";
+  return isAdmin(user.role) ? null : "Só administradoras podem importar.";
+}
+
 /** Ensure every name exists in `profissionais`, return name → id map. */
-async function upsertProfessionals(
-  supabase: Awaited<ReturnType<typeof createClient>>,
-  names: string[],
-): Promise<Map<string, string>> {
+async function upsertProfessionals(names: string[]): Promise<Map<string, string>> {
   const unique = Array.from(new Set(names));
 
-  // Insert missing ones (ignore conflicts on the unique `nome`).
-  const { error: insErr } = await supabase
-    .from("profissionais")
-    .upsert(
-      unique.map((nome) => ({ nome })),
-      { onConflict: "nome", ignoreDuplicates: true },
-    );
-  if (insErr) throw new Error(`profissionais: ${insErr.message}`);
+  await db.query(
+    "insert into profissionais (nome) select unnest($1::text[]) on conflict (nome) do nothing",
+    [unique],
+  );
+  const { rows } = await db.query<{ id: string; nome: string }>(
+    "select id, nome from profissionais where nome = any($1::text[])",
+    [unique],
+  );
 
-  const { data, error } = await supabase
-    .from("profissionais")
-    .select("id, nome")
-    .in("nome", unique);
-  if (error) throw new Error(`profissionais select: ${error.message}`);
-
-  return new Map((data ?? []).map((p) => [p.nome, p.id]));
+  return new Map(rows.map((p) => [p.nome, p.id]));
 }
 
 /**
@@ -64,78 +63,73 @@ export async function saveGoals(
   persistir = false,
 ): Promise<SaveResult> {
   try {
-    const supabase = await createClient();
+    const denied = await requireAdmin();
+    if (denied) return { ok: false, error: denied };
 
     const valid = goals.filter((g) => g.valorMeta > 0);
     if (valid.length === 0) {
       return { ok: false, error: "Defina ao menos uma meta antes de salvar." };
     }
 
-    const nameToId = await upsertProfessionals(
-      supabase,
-      valid.map((g) => g.profissional),
+    const nameToId = await upsertProfessionals(valid.map((g) => g.profissional));
+
+    await db.query(
+      `insert into metas (profissional_id, mes_ano, valor_meta, persistir_meta_mes)
+       select p, $2, v, $4 from unnest($1::uuid[], $3::numeric[]) as t(p, v)
+       on conflict (profissional_id, mes_ano) do update
+         set valor_meta = excluded.valor_meta,
+             persistir_meta_mes = excluded.persistir_meta_mes`,
+      [valid.map((g) => nameToId.get(g.profissional)), mesAno, valid.map((g) => g.valorMeta), persistir],
     );
-
-    const metaRows = valid.map((g) => ({
-      profissional_id: nameToId.get(g.profissional)!,
-      mes_ano: mesAno,
-      valor_meta: g.valorMeta,
-      persistir_meta_mes: persistir,
-    }));
-
-    const { error } = await supabase
-      .from("metas")
-      .upsert(metaRows, { onConflict: "profissional_id,mes_ano" });
-    if (error) return { ok: false, error: `metas: ${error.message}` };
 
     return {
       ok: true,
-      inserted: { profissionais: nameToId.size, metas: metaRows.length, vendas: 0 },
+      inserted: { profissionais: nameToId.size, metas: valid.length, vendas: 0 },
     };
   } catch (err) {
-    return { ok: false, error: err instanceof Error ? err.message : "Erro desconhecido." };
+    return { ok: false, error: err instanceof Error ? `metas: ${err.message}` : "Erro desconhecido." };
   }
 }
 
 /**
  * Persist the imported sales rows. Idempotent: rows whose `hash_transacao`
- * already exists are skipped by the unique constraint (ignoreDuplicates).
+ * already exists are skipped by the unique constraint (on conflict do nothing).
  */
 export async function saveSales(
   mesAno: string,
   rows: ParsedSaleRow[],
 ): Promise<SaveResult> {
   try {
-    const supabase = await createClient();
+    const denied = await requireAdmin();
+    if (denied) return { ok: false, error: denied };
     if (rows.length === 0) return { ok: false, error: "Nenhuma venda para importar." };
 
-    const nameToId = await upsertProfessionals(
-      supabase,
-      rows.map((r) => r.profissional),
+    const nameToId = await upsertProfessionals(rows.map((r) => r.profissional));
+
+    const { rowCount } = await db.query(
+      `insert into vendas_importadas
+         (profissional_id, data_venda, valor_venda, valor_comissao_calculada,
+          categoria, servico, mes_ano, hash_transacao)
+       select p, d, v, c, cat, s, $7, h
+         from unnest($1::uuid[], $2::date[], $3::numeric[], $4::numeric[],
+                     $5::text[], $6::text[], $8::text[]) as t(p, d, v, c, cat, s, h)
+       on conflict (hash_transacao) do nothing`,
+      [
+        rows.map((r) => nameToId.get(r.profissional)),
+        rows.map((r) => r.dataVenda),
+        rows.map((r) => r.valorVenda),
+        rows.map((r) => r.comissaoLinha),
+        rows.map((r) => r.categoria),
+        rows.map((r) => r.servico),
+        mesAno,
+        rows.map((r) => r.hashTransacao),
+      ],
     );
 
-    const vendaRows = rows.map((r) => ({
-      profissional_id: nameToId.get(r.profissional)!,
-      data_venda: r.dataVenda,
-      valor_venda: r.valorVenda,
-      valor_comissao_calculada: r.comissaoLinha,
-      categoria: r.categoria,
-      servico: r.servico,
-      mes_ano: mesAno,
-      hash_transacao: r.hashTransacao,
-    }));
-
-    // ignoreDuplicates → existing hashes are silently skipped.
-    const { data, error } = await supabase
-      .from("vendas_importadas")
-      .upsert(vendaRows, { onConflict: "hash_transacao", ignoreDuplicates: true })
-      .select("id");
-    if (error) return { ok: false, error: `vendas: ${error.message}` };
-
-    const inseridas = data?.length ?? 0;
+    const inseridas = rowCount ?? 0;
     // Rows submitted minus rows actually inserted = duplicates the unique
     // hash_transacao constraint idempotently skipped.
-    const duplicatasIgnoradas = Math.max(0, vendaRows.length - inseridas);
+    const duplicatasIgnoradas = Math.max(0, rows.length - inseridas);
 
     return {
       ok: true,
@@ -147,7 +141,7 @@ export async function saveSales(
       duplicatasIgnoradas,
     };
   } catch (err) {
-    return { ok: false, error: err instanceof Error ? err.message : "Erro desconhecido." };
+    return { ok: false, error: err instanceof Error ? `vendas: ${err.message}` : "Erro desconhecido." };
   }
 }
 
@@ -189,21 +183,14 @@ export async function saveImport(
 export async function getPersistedGoals(mesAno: string): Promise<PersistedGoal[]> {
   if (!/^\d{4}-\d{2}$/.test(mesAno)) return [];
   try {
-    const supabase = await createClient();
-    const { data, error } = await supabase
-      .from("metas")
-      .select("valor_meta, persistir_meta_mes, profissionais(nome)")
-      .eq("mes_ano", mesAno)
-      .eq("persistir_meta_mes", true);
-    if (error || !data) return [];
-
-    return data.flatMap((row) => {
-      // Supabase types the joined relation as an array; take the first name.
-      const rel = row.profissionais as unknown as { nome: string } | { nome: string }[] | null;
-      const nome = Array.isArray(rel) ? rel[0]?.nome : rel?.nome;
-      if (!nome) return [];
-      return [{ profissional: nome, valorMeta: Number(row.valor_meta) }];
-    });
+    if (await requireAdmin()) return [];
+    const { rows } = await db.query<{ nome: string; valor_meta: string }>(
+      `select p.nome, m.valor_meta
+         from metas m join profissionais p on p.id = m.profissional_id
+        where m.mes_ano = $1 and m.persistir_meta_mes`,
+      [mesAno],
+    );
+    return rows.map((r) => ({ profissional: r.nome, valorMeta: Number(r.valor_meta) }));
   } catch {
     return [];
   }

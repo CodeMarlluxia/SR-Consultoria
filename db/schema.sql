@@ -1,10 +1,10 @@
 -- =====================================================================
---  Sales Performance & Commission Dashboard — Supabase Schema
---  PostgreSQL (Supabase)
---  Run this in the Supabase SQL Editor (or via `supabase db push`).
+--  Sales Performance & Commission Dashboard — Schema
+--  PostgreSQL puro (13+). Idempotente: pode rodar mais de uma vez.
+--    psql "$DATABASE_URL" -f db/schema.sql
 -- =====================================================================
 
--- Needed for gen_random_uuid()
+-- Needed for gen_random_uuid() on PostgreSQL < 13.
 create extension if not exists "pgcrypto";
 
 -- ---------------------------------------------------------------------
@@ -30,10 +30,6 @@ create table if not exists metas (
     unique (profissional_id, mes_ano)
 );
 
--- Idempotent migration for databases created before this column existed.
-alter table metas
-    add column if not exists persistir_meta_mes boolean not null default false;
-
 -- ---------------------------------------------------------------------
 -- 3. Consolidated Sales History
 -- ---------------------------------------------------------------------
@@ -50,39 +46,33 @@ create table if not exists vendas_importadas (
 );
 
 -- ---------------------------------------------------------------------
+-- 4. Contas de acesso (RBAC) — substitui auth.users + perfis da Supabase.
+--    'admin' (acesso total) e 'usuario_padrao' (só o Painel).
+--    senha_hash é bcrypt — o mesmo formato da Supabase, então as senhas
+--    migradas continuam valendo.
+-- ---------------------------------------------------------------------
+create table if not exists perfis (
+    user_id     uuid primary key default gen_random_uuid(),
+    email       varchar(255) not null,
+    senha_hash  varchar(255) not null,
+    role        varchar(20) not null default 'usuario_padrao'
+                    check (role in ('admin', 'usuario_padrao')),
+    criado_em   timestamptz not null default now()
+);
+
+-- E-mail único sem diferenciar maiúsculas (o login compara com lower()).
+create unique index if not exists idx_perfis_email on perfis (lower(email));
+
+-- ---------------------------------------------------------------------
 -- Indexes (query performance for dashboard aggregations)
 -- ---------------------------------------------------------------------
 create index if not exists idx_vendas_profissional  on vendas_importadas (profissional_id);
 create index if not exists idx_vendas_mes_ano        on vendas_importadas (mes_ano);
 create index if not exists idx_vendas_prof_periodo   on vendas_importadas (profissional_id, mes_ano);
+create index if not exists idx_vendas_data           on vendas_importadas (data_venda);
 create index if not exists idx_metas_mes_ano         on metas (mes_ano);
-
--- ---------------------------------------------------------------------
--- Row Level Security
---   Enable RLS and allow authenticated users full access.
---   Tighten these policies later if you add multi-tenant / per-user scoping.
--- ---------------------------------------------------------------------
-alter table profissionais       enable row level security;
-alter table metas               enable row level security;
-alter table vendas_importadas   enable row level security;
-
-drop policy if exists "auth full access - profissionais" on profissionais;
-create policy "auth full access - profissionais"
-    on profissionais for all
-    to authenticated
-    using (true) with check (true);
-
-drop policy if exists "auth full access - metas" on metas;
-create policy "auth full access - metas"
-    on metas for all
-    to authenticated
-    using (true) with check (true);
-
-drop policy if exists "auth full access - vendas" on vendas_importadas;
-create policy "auth full access - vendas"
-    on vendas_importadas for all
-    to authenticated
-    using (true) with check (true);
+-- Speeds up "load persisted goals for this period" lookups from the importer.
+create index if not exists idx_metas_persistir       on metas (mes_ano) where persistir_meta_mes = true;
 
 -- ---------------------------------------------------------------------
 -- Convenience view: per-professional performance for a given period.

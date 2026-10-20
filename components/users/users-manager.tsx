@@ -12,7 +12,7 @@ import {
   IconUsers,
   IconX,
 } from "@/components/icons";
-import type { Role } from "@/lib/supabase/perfil";
+import type { Role } from "@/lib/auth/user";
 
 export interface PerfilRow {
   user_id: string;

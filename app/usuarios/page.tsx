@@ -1,28 +1,22 @@
 import { redirect } from "next/navigation";
-import { createClient } from "@/lib/supabase/server";
-import { getRole, isAdmin } from "@/lib/supabase/perfil";
-import { UsersManager } from "@/components/users/users-manager";
+import { db } from "@/lib/db";
+import { getUser, isAdmin } from "@/lib/auth/user";
+import { UsersManager, type PerfilRow } from "@/components/users/users-manager";
 
 export const dynamic = "force-dynamic";
 
 export default async function UsuariosPage() {
-  const supabase = await createClient();
-  const {
-    data: { user },
-  } = await supabase.auth.getUser();
+  const user = await getUser();
   if (!user) redirect("/login");
+  if (!isAdmin(user.role)) redirect("/dashboard");
 
-  const role = await getRole(supabase, user.id);
-  if (!isAdmin(role)) redirect("/dashboard");
-
-  const { data } = await supabase
-    .from("perfis")
-    .select("user_id, email, role, criado_em")
-    .order("criado_em", { ascending: false });
+  const { rows } = await db.query<PerfilRow>(
+    "select user_id, email, role, criado_em::text from perfis order by criado_em desc",
+  );
 
   return (
     <main className="mx-auto max-w-[880px] px-6 py-10">
-      <UsersManager perfis={data ?? []} currentUserId={user.id} />
+      <UsersManager perfis={rows} currentUserId={user.id} />
     </main>
   );
 }

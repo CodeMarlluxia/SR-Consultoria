@@ -4,7 +4,7 @@ import Link from "next/link";
 import { usePathname } from "next/navigation";
 import type { SVGProps } from "react";
 import { IconHome, IconTarget, IconUsers } from "@/components/icons";
-import type { Role } from "@/lib/supabase/perfil";
+import type { Role } from "@/lib/auth/user";
 
 type NavItem = {
   href: string;

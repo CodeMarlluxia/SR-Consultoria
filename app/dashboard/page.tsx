@@ -1,5 +1,7 @@
 import { Dashboard } from "@/components/dashboard/dashboard";
 import { loadDashboardPayload, getDataBounds } from "@/lib/dashboard/data";
+import { redirect } from "next/navigation";
+import { getUser } from "@/lib/auth/user";
 
 export const dynamic = "force-dynamic";
 
@@ -19,6 +21,9 @@ export default async function DashboardPage({
 }: {
   searchParams: Promise<{ de?: string; ate?: string }>;
 }) {
+  // Middleware only checks the cookie; this catches deleted accounts.
+  if (!(await getUser())) redirect("/login");
+
   const { de, ate } = await searchParams;
 
   // The date-range picker is the only period control. Its bounds are the full
@@ -33,7 +38,7 @@ export default async function DashboardPage({
   let to = isDate(ate) ? ate : fallback.to;
   if (from > to) [from, to] = [to, from]; // tolerate an inverted window
 
-  // Re-queries Supabase on every window change — sales by data_venda, goals
+  // Re-queries the database on every window change — sales by data_venda, goals
   // for every month the window touches.
   const payload = await loadDashboardPayload(from, to);
 
