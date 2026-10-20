@@ -2,6 +2,7 @@
 
 import { useState, useTransition } from "react";
 import { login } from "@/app/actions/auth";
+import { IconEye, IconEyeOff } from "@/components/icons";
 
 /**
  * Tela de entrada. A marca vive só na barra do topo — repeti-la dentro do
@@ -10,6 +11,7 @@ import { login } from "@/app/actions/auth";
  */
 export function LoginForm({ redirectTo }: { redirectTo: string }) {
   const [error, setError] = useState("");
+  const [showPassword, setShowPassword] = useState(false);
   const [pending, startTransition] = useTransition();
 
   function handleSubmit(formData: FormData) {
@@ -48,14 +50,25 @@ export function LoginForm({ redirectTo }: { redirectTo: string }) {
           <label htmlFor="password" className="mb-1.5 block text-xs font-medium text-ink-soft">
             Senha
           </label>
-          <input
-            id="password"
-            name="password"
-            type="password"
-            required
-            autoComplete="current-password"
-            className="w-full rounded-[10px] border-[1.5px] border-white/60 bg-white/60 px-3 py-2.5 text-sm text-ink outline-none transition-all focus:border-pastel-serenity focus:shadow-[0_0_0_3px_rgba(212,184,240,0.25)] dark:border-white/15 dark:bg-white/5"
-          />
+          <div className="relative">
+            <input
+              id="password"
+              name="password"
+              type={showPassword ? "text" : "password"}
+              required
+              autoComplete="current-password"
+              className="w-full rounded-[10px] border-[1.5px] border-white/60 bg-white/60 py-2.5 pl-3 pr-11 text-sm text-ink outline-none transition-all focus:border-pastel-serenity focus:shadow-[0_0_0_3px_rgba(212,184,240,0.25)] dark:border-white/15 dark:bg-white/5"
+            />
+            <button
+              type="button"
+              onClick={() => setShowPassword((v) => !v)}
+              aria-label={showPassword ? "Ocultar senha" : "Mostrar senha"}
+              aria-pressed={showPassword}
+              className="absolute inset-y-0 right-0 flex w-11 items-center justify-center rounded-r-[10px] text-ink-soft transition-colors hover:text-ink focus-visible:text-ink focus-visible:outline-none"
+            >
+              {showPassword ? <IconEyeOff className="h-[18px] w-[18px]" /> : <IconEye className="h-[18px] w-[18px]" />}
+            </button>
+          </div>
         </div>
 
         {error && <p className="text-sm text-accent-rose">{error}</p>}
